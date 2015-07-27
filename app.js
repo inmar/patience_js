@@ -13,59 +13,78 @@
 
 function autoRetryController(API, Retry) {
   var vm = this;
-  vm.log = [
-    'Loaded controller. Awaiting button press, my liege.',
-  ];
 
   vm.makeRequest = function () {
-    vm.log.push('Starting Request...');
+    console.warn('Starting Request...');
 
-    Retry.makeRequest(API.makeFailingRequest).then(function () {
-      console.log('done making requests');
+    Retry(API.makeFailingRequest).then(function () {
+      console.warn('done making requests');
+    }).catch(function (e) {
+      console.warn('HTTP call errored out after retries.', e);
     });
 
   };
 }
 
-function retryService($timeout) {
+function retryService($q, $timeout) {
 
-  this.makeRequest = function (request, retryCount, timeOut) {
-    var requestLimit    = retryCount || 2;
-    var retryTimeOut  = timeOut || 50;
-    var requestCount  = 0;
+  return function (request, retryCount, timeOut) {
+    var requestLimit = retryCount || 3;
+    var requestTimeout = timeOut || 50;
+    var requestCount = 0;
+    var response = $q.defer();
 
-    console.log('making failing $http requests', requestLimit, 'times @', retryTimeOut, 'ms intervals');
+    console.group('making failing $http requests', requestLimit, 'times @', requestTimeout, 'ms intervals');
 
     // make a failing request [retryCount] times
-    request().catch(function () {
-      console.log('failed request #', requestCount);
+    (function makeRequest() {
 
-      if (requestCount < requestLimit) {
-        request();
+      request().catch(function () {
+
+        console.log('request #', requestCount + 1, 'failed.');
+
         requestCount++;
-      } else {
-        console.log('request #', requestCount, 'failed. Limit of', requestLimit, 'reached.');
-      }
 
-    });
+        if (requestCount < requestLimit) {
+          console.log('retrying in', requestTimeout, 'ms');
 
-    // resolve with successful call 
+          // retry request at [interval]
+          $timeout(makeRequest, requestTimeout);
+        } else {
+          console.log('Limit of', requestLimit, 'requests reached.');
+          console.log('Breaking cycle and re.');
+          response.reject({ failed: true });
+          console.groupEnd();
+        }
+
+      });
+    }());
+
+
+    return response.promise;
   };
 }
 
 function apiService($http) {
-  var badURL  = 'http://localhost:8080/bad-url';
-  var goodURL = 'http://www.mocky.io/v2/55b68eab76961d7c107c5b7e';
+  var badRequestConfig  = {
+    method: 'GET',
+    url: 'http://localhost:8080/bad-url'
+  };
+
+  var goodRequestConfig = {
+    method: 'GET',
+    url: 'http://www.mocky.io/v2/55b68eab76961d7c107c5b7e'
+  };
 
   this.makeFailingRequest = function () {
-    return $http.get(badURL).then(function (res) {
+    return $http(badRequestConfig).then(function (res) {
       console.log('bad request succeeded, shomehow.');
       return res.data;
     });
   };
 
   this.makeSuccessfulRequest = function () {
-    return $http.get(goodURL).then(function (res) {
+    return $http(goodRequestConfig).then(function (res) {
       return res.data;
     });
   };
@@ -78,6 +97,6 @@ angular.module('autoRetry', []);
 
 angular
   .module('autoRetry')
-  .service('API', ['$q', '$http', apiService])
-  .service('Retry', ['$timeout', retryService])
+  .service('API', ['$http', apiService])
+  .factory('Retry', ['$q', '$timeout', retryService])
   .controller('AutoRetryController', autoRetryController);
