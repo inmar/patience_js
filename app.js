@@ -14,13 +14,13 @@
 function autoRetryController(API, Retry) {
   var vm = this;
 
-  vm.makeRequest = function () {
+  vm.makeRequest = function (times, intervals) {
     console.warn('Starting Request...');
 
-    Retry(API.makeFailingRequest).then(function () {
+    Retry(API.makeSuccessfulRequest, times, intervals).then(function (res) {
       console.warn('done making requests');
     }).catch(function (e) {
-      console.warn('HTTP call errored out after retries.', e);
+      console.warn('HTTP call errored out after alotted retries.', e);
     });
 
   };
@@ -34,33 +34,33 @@ function retryService($q, $timeout) {
     var requestCount = 0;
     var response = $q.defer();
 
-    console.group('making failing $http requests', requestLimit, 'times @', requestTimeout, 'ms intervals');
+    console.group('making $http request. Retry Info:', requestLimit, 'times @', requestTimeout, 'ms intervals');
 
     // make a failing request [retryCount] times
     (function makeRequest() {
 
-      request().catch(function () {
-
+      request().then(function (res) {
+        response.resolve(res);
+      }).catch(function () {
         console.log('request #', requestCount + 1, 'failed.');
-
         requestCount++;
 
         if (requestCount < requestLimit) {
           console.log('retrying in', requestTimeout, 'ms');
 
-          // retry request at [interval]
+          // retry request after [requestTimeout] ms have passed
           $timeout(makeRequest, requestTimeout);
         } else {
           console.log('Limit of', requestLimit, 'requests reached.');
           console.log('Breaking cycle and re.');
           response.reject({ failed: true });
-          console.groupEnd();
         }
 
       });
     }());
 
 
+    console.groupEnd();
     return response.promise;
   };
 }
@@ -73,7 +73,7 @@ function apiService($http) {
 
   var goodRequestConfig = {
     method: 'GET',
-    url: 'http://www.mocky.io/v2/55b68eab76961d7c107c5b7e'
+    url: 'http://localhost:8080/'
   };
 
   this.makeFailingRequest = function () {
