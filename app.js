@@ -15,12 +15,12 @@ function autoRetryController(API, Retry) {
   var vm = this;
 
   vm.makeRequest = function (times, intervals) {
-    console.warn('Starting Request...');
+    console.log('Controller: Starting Request...');
 
-    Retry(API.makeSuccessfulRequest, times, intervals).then(function (res) {
-      console.warn('done making requests');
+    Retry(API.makeFailingRequest, times, intervals).then(function (res) {
+      console.log('Controller: done making requests', res);
     }).catch(function (e) {
-      console.warn('HTTP call errored out after alotted retries.', e);
+      console.log('Controller: Request promise was rejected.', e);
     });
 
   };
@@ -28,13 +28,15 @@ function autoRetryController(API, Retry) {
 
 function retryService($q, $timeout) {
 
-  return function (request, retryCount, timeOut) {
-    var requestLimit = retryCount || 3;
+  return function (request, retryCount, timeOut, debug) {
+    var requestLimit   = retryCount || 3;
     var requestTimeout = timeOut || 50;
-    var requestCount = 0;
-    var response = $q.defer();
+    var requestCount   = 0;
+    var response       = $q.defer();
 
-    console.group('making $http request. Retry Info:', requestLimit, 'times @', requestTimeout, 'ms intervals');
+    if (debug) {
+      console.warn('making $http request. Retry Info:', requestLimit, 'times @', requestTimeout, 'ms intervals');
+    }
 
     // make a failing request [retryCount] times
     (function makeRequest() {
@@ -42,25 +44,29 @@ function retryService($q, $timeout) {
       request().then(function (res) {
         response.resolve(res);
       }).catch(function () {
-        console.log('request #', requestCount + 1, 'failed.');
+        if (debug) {
+          console.warn('request #', requestCount + 1, 'failed.');
+        }
+
         requestCount++;
 
         if (requestCount < requestLimit) {
-          console.log('retrying in', requestTimeout, 'ms');
+          console.warn('retrying in', requestTimeout, 'ms');
 
           // retry request after [requestTimeout] ms have passed
           $timeout(makeRequest, requestTimeout);
         } else {
-          console.log('Limit of', requestLimit, 'requests reached.');
-          console.log('Breaking cycle and re.');
+          if (debug) {
+            console.warn('Limit of', requestLimit, 'requests reached.');
+            console.warn('Breaking retry cycle.');
+          }
+
           response.reject({ failed: true });
         }
 
       });
     }());
 
-
-    console.groupEnd();
     return response.promise;
   };
 }
@@ -78,7 +84,6 @@ function apiService($http) {
 
   this.makeFailingRequest = function () {
     return $http(badRequestConfig).then(function (res) {
-      console.log('bad request succeeded, shomehow.');
       return res.data;
     });
   };

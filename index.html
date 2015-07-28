@@ -9,14 +9,30 @@
       <title>POC: Auto-retry</title>
       <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
       <script src="app.js"></script>
-
+      <link href="styles.css" rel="stylesheet"> 
     </head>
 
   <body ng-controller="AutoRetryController as ctrl">
-    
-    <button ng-click="ctrl.makeRequest()">Make HTTP Request</button>
 
-    <h4>Check console!</h4>
+    <h2>Test 1</h2>
+    <p>Make a request using retry service using default configs.</p>
+    <p>
+      <strong>Configuration:</strong> None / Default. 
+    </p>
+    <button ng-click="ctrl.makeRequest()">Make HTTP Request</button>
+    
+    <hr/>
+    <h2>Test 2</h2>
+    <p>
+      <strong>Configuration:</strong> Retry failed requests 5 times @ 3000ms interval. 
+    </p>
+    <button ng-click="ctrl.makeRequest(5, 3000)">Make HTTP Request</button>
+
+    <hr/>
+    <p>
+      <strong>Configuration:</strong> Retry failed requests 10 times @ 5000ms interval. 
+    </p>
+    <button ng-click="ctrl.makeRequest(10, 5000)">Make HTTP Request</button>
 
   </body>
 
