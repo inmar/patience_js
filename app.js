@@ -12,7 +12,7 @@
  */
 (function () {
 
-  var demoCtrl = function (API, Retry) {
+  var demoCtrl = function (API, Retry, $timeout) {
     var vm = this;
 
     vm.makeRequest = function (times, interval) {
