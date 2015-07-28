@@ -12,7 +12,7 @@
  */
 (function () {
 
-  var demoCtrl = function (API, Retry, $timeout) {
+  var demoCtrl = function (API, Retry, $timeout, notifications) {
     var vm = this;
 
     vm.makeRequest = function (times, interval) {
@@ -21,8 +21,12 @@
 
       Retry(API.makeFailingRequest, times, interval, true).then(function (res) {
         console.log('Controller: done making requests', res);
+        notifications.showSuccess({message: 'Good news, everyone!'});
       }).catch(function (e) {
-        console.log('Controller: Request promise was rejected.', e);
+        notifications.showError({
+          message: e.msg,
+          hide: false,
+        });
       });
 
     };
@@ -55,7 +59,10 @@
   /**
    * Angular App
    */
-  angular.module('retryDemo', ['autoRetry']);
+  angular.module('retryDemo', [
+    'autoRetry',
+    'ngNotificationsBar'
+  ]);
 
   angular
     .module('retryDemo')

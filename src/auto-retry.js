@@ -101,7 +101,7 @@
           }
 
           queueFutureRequests(request);
-          request.response.reject({ err: 'Service is unreachable.' });
+          request.response.reject({ msg: 'Network is down. Please check your internet connection' });
         }
 
         return request.response.promise;
