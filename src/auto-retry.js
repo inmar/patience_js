@@ -94,6 +94,7 @@
     }
 
     return function (providedRequestConfig) {
+
       var response = $q.defer();
 
       // build $http compatible config
@@ -103,8 +104,16 @@
       // retry configurations
       var retryConfig = defaultRetryConfig;
 
-      // make $http request
-      makeRequest(requestConfig, retryConfig);
+      if (denyAllRequests) {
+
+        console.log('sorry, all requests are currently blocked.');
+        requestConfig.promise.reject('Max retried exhausted.');
+
+      } else {
+
+        // make $http request
+        makeRequest(requestConfig, retryConfig);
+      }
 
       return response.promise;
     };
