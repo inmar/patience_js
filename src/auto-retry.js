@@ -7,9 +7,7 @@
 
   function httpRetry($http, $q, $interval) {
 
-    var denyAllRequests = false;
-
-    var defaultRetryConfig = {
+    var defaults = {
       max: 3, // number of times to retry request
       interval: 50, // ms
       failTimeout: 5000, //ms
@@ -19,8 +17,8 @@
 
     var queue = {
       requests: [],
-      add: function (requestConfig) {
-        this.requests.push(requestConfig);
+      add: function (httpConfig) {
+        this.requests.push(httpConfig);
       },
       flush: function () {
         // ISSUE: attempting to fullfil 
@@ -31,100 +29,103 @@
       }
     };
 
-    function denyAllFutureRequests() {
-      denyAllRequests = true;
-    }
+    var request = {
+      isBlocked: false,
+      attempt: function (httpConfig, retry) {
 
-    function parseConfig(config) {
-      var parsedConfig = {};
+        var self = this;
 
-      // check for usage of get request short-hand
-      if (typeof config === 'string') {
-        parsedConfig = {
-          url: config,
-          method: 'GET',
-        };
-      } else {
-        parsedConfig = config;
-      }
+        $http(httpConfig).then(function (res) {
 
-      return parsedConfig;
-    }
+          httpConfig.promise.resolve(res);
 
-    function setUpReAttemptInterval(httpConfig, interval) {
+        }).catch(function () {
 
-      // setInterval to retry request
-      var intervalPromise = $interval(function () {
+          // increment http attempt counter for this request
+          retry.attempts++;
 
-        $http({ method: 'GET', url: 'http://localhost:8080' }).then(function (res) {
+          if (retry.attempts >= retry.max) {
 
-          // ISSUE: how to let the application
-          // know that this occurred?
-          httpConfig.promise.resolve(res); // will not work since promise has already been rejected
+            // reject the promise to the service consumer
+            httpConfig.promise.reject('Max retried exhausted.');
 
-          // no longer retry
-          $interval.cancel(intervalPromise);
+            if (retry.reAttemptOnFailure) {
 
-          // release queued requests
-          queue.flush();
-        });
+              self.setUpReAttemptInterval(httpConfig, retry.failTimeout);
 
-      }, interval);
-    }
+              // set a flag to block future requests
+              self.isBlocked = true;
 
-    function makeRequest(httpConfig, retry) {
-
-      $http(httpConfig).then(function (res) {
-
-        httpConfig.promise.resolve(res);
-
-      }).catch(function () {
-
-        // increment http attempt counter for this request
-        retry.attempts++;
-
-        if (retry.attempts >= retry.max) {
-
-          // reject the promise to the service consumer
-          httpConfig.promise.reject('Max retried exhausted.');
-
-          if (retry.reAttemptOnFailure) {
-
-            setUpReAttemptInterval(httpConfig, retry.failTimeout);
-            denyAllFutureRequests();
-
+            }
+          } else {
+            self.attempt(httpConfig, retry);
           }
 
+        });
+      },
+      parseConfig: function (config) {
+        var parsedConfig = {};
+
+        // check for usage of get request short-hand
+        if (typeof config === 'string') {
+          parsedConfig = {
+            url: config,
+            method: 'GET',
+          };
         } else {
-          makeRequest(httpConfig, retry);
+          parsedConfig = config;
         }
 
-      });
-    }
+        return parsedConfig;
+      },
+      setUpReAttemptInterval: function (httpConfig, interval) {
+
+        // setInterval to retry request
+        var intervalPromise = $interval(function () {
+
+          $http({ method: 'GET', url: 'http://localhost:8080' }).then(function (res) {
+
+            // ISSUE: how to let the application
+            // know that this occurred?
+            httpConfig.promise.resolve(res); // will not work since promise has already been rejec
+
+            // no longer retry
+            $interval.cancel(intervalPromise);
+
+            // release queued requests
+            queue.flush();
+          });
+
+        }, interval);
+      }
+    };
 
     return function (providedRequestConfig) {
 
       var response = $q.defer();
 
       // build $http compatible config
-      var requestConfig     = parseConfig(providedRequestConfig);
-      requestConfig.promise = response;
+      var httpConfig     = request.parseConfig(providedRequestConfig);
+
+      // attach a promise, which represents
+      // a response to request
+      httpConfig.promise = response;
 
       // retry configurations
-      var retryConfig = defaultRetryConfig;
+      var retryConfig    = defaults;
 
-      if (denyAllRequests) {
+      if (request.isBlocked) {
 
         console.log('sorry, all requests are currently blocked.');
 
-        queue.add(requestConfig);
+        queue.add(httpConfig);
 
-        requestConfig.promise.reject('Max retried exhausted.');
+        httpConfig.promise.reject('Max retried exhausted.');
 
       } else {
 
         // make $http request
-        makeRequest(requestConfig, retryConfig);
+        request.attempt(httpConfig, retryConfig);
       }
 
       return response.promise;
