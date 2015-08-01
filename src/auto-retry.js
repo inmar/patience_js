@@ -9,11 +9,6 @@
 
     var denyAllRequests = false;
 
-    var goodRequestConfig = {
-      method: 'GET',
-      url: 'http://localhost:8080'
-    };
-
     var defaultRetryConfig = {
       max: 3, // number of times to retry request
       interval: 50, // ms
@@ -22,8 +17,18 @@
       attempts: 0,
     };
 
-    var getRequestParams = {
-      method: 'GET',
+    var queue = {
+      requests: [],
+      add: function (requestConfig) {
+        this.requests.push(requestConfig);
+      },
+      flush: function () {
+        // ISSUE: attempting to fullfil 
+        // backlog http requests will flood server,
+        // and cause performance issues.
+        // Trying to control their flow will cause complexity.
+        this.requests = [];
+      }
     };
 
     function denyAllFutureRequests() {
@@ -35,8 +40,10 @@
 
       // check for usage of get request short-hand
       if (typeof config === 'string') {
-        parsedConfig     = angular.copy(getRequestParams);
-        parsedConfig.url = config;
+        parsedConfig = {
+          url: config,
+          method: 'GET',
+        };
       } else {
         parsedConfig = config;
       }
@@ -49,7 +56,7 @@
       // setInterval to retry request
       var intervalPromise = $interval(function () {
 
-        $http(httpConfig).then(function (res) {
+        $http({ method: 'GET', url: 'http://localhost:8080' }).then(function (res) {
 
           // ISSUE: how to let the application
           // know that this occurred?
@@ -57,10 +64,12 @@
 
           // no longer retry
           $interval.cancel(intervalPromise);
+
+          // release queued requests
+          queue.flush();
         });
 
       }, interval);
-
     }
 
     function makeRequest(httpConfig, retry) {
@@ -107,6 +116,9 @@
       if (denyAllRequests) {
 
         console.log('sorry, all requests are currently blocked.');
+
+        queue.add(requestConfig);
+
         requestConfig.promise.reject('Max retried exhausted.');
 
       } else {
