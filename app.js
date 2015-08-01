@@ -12,27 +12,29 @@
  */
 (function () {
 
-  var demoCtrl = function (API, Retry, $timeout, notifications) {
+  var demoCtrl = function (API, notifications) {
     var vm = this;
 
     vm.makeRequest = function (times, interval) {
       console.clear();
-      console.log('Controller: Starting Request...');
 
-      Retry(API.makeFailingRequest, times, interval, true).then(function (res) {
-        console.log('Controller: done making requests', res);
-        notifications.showSuccess({message: 'Good news, everyone!'});
+      API.makeFailingRequest(times, interval, true).then(function (res) {
+
+        console.log(res);
+
       }).catch(function (e) {
+
         notifications.showError({
-          message: e.msg,
-          hide: false,
+          message: 'Your request could not be completed. We will auto-retry in x seconds',
+          error: e,
         });
+
       });
 
     };
   };
 
-  function apiService($http) {
+  function apiService($http, $httpRetry) {
     var badRequestConfig  = {
       method: 'GET',
       url: 'http://localhost:8080/bad-url'
@@ -40,13 +42,17 @@
 
     var goodRequestConfig = {
       method: 'GET',
-      url: 'http://localhost:8080/'
+      url: 'http://localhost:8080'
     };
 
-    this.makeFailingRequest = function () {
-      return $http(badRequestConfig).then(function (res) {
+    this.makeFailingRequest = function (times, interval, debug) {
+
+      return $httpRetry(badRequestConfig).then(function (res) {
         return res.data;
+      }).catch(function (err) {
+        return err;
       });
+
     };
 
     this.makeSuccessfulRequest = function () {
@@ -66,7 +72,7 @@
 
   angular
     .module('retryDemo')
-    .service('API', ['$http', apiService])
+    .service('API', ['$http', '$httpRetry', apiService])
     .controller('demoCtrl', demoCtrl);
 
-})();
+}());

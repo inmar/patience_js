@@ -1,160 +1,120 @@
 /**
  * Name: Retry Module
- * Desc: $http wrapper which includes retry
- *         and circuit-breaker functionality.
+ * Desc: $http wrapper which includes retry functionality.
+ *
  */
 (function () {
-  angular.module('autoRetry', []);
 
-  function retryService($q, $timeout) {
-    var breakCircuit   = false;
-    var circuitTimeout = 10000; // ms
-    var requestQueue   = [];
-    var circuitBreakTime;
+  function httpRetry($http, $q, $interval) {
 
-    /**
-     * Flushes the requests in requestQueue,
-     * one at a time
-     */
-    function flushRequestQueue() {
-      console.log('flushing queue', requestQueue);
-      requestQueue = [];
-      console.log('Done flushing queue', requestQueue);
+    var denyAllRequests = false;
+
+    var goodRequestConfig = {
+      method: 'GET',
+      url: 'http://localhost:8080'
+    };
+
+    var defaultRetryConfig = {
+      max: 3, // number of times to retry request
+      interval: 50, // ms
+      failTimeout: 5000, //ms
+      reAttemptOnFailure: true,
+      attempts: 0,
+    };
+
+    var getRequestParams = {
+      method: 'GET',
+    };
+
+    function denyAllFutureRequests() {
+      denyAllRequests = true;
     }
 
+    function parseConfig(config) {
+      var parsedConfig = {};
 
-    /**
-     * Queues a single request
-     */
-    function queueRequest(request) {
-
-      // reset the counter for this request
-      request.attempts = 0;
-
-      // push to queue
-      requestQueue.push(request);
-
-      if (request.debugEnabled) {
-        console.info('Request was queued until network timeout is up.');
-        console.warn('Current queue:', requestQueue);
+      // check for usage of get request short-hand
+      if (typeof config === 'string') {
+        parsedConfig     = angular.copy(getRequestParams);
+        parsedConfig.url = config;
+      } else {
+        parsedConfig = config;
       }
 
-      request.response.notify({ err: 'queued' });
+      return parsedConfig;
     }
 
-    /**
-     * Called the first time that retrying fails
-     *
-     * Sets flag to queue all future requests until
-     * [circuitTimeout] ms have passed.
-     */
-    function queueFutureRequests(request) {
-      breakCircuit     = true;
-      circuitBreakTime = Date.now();
+    function setUpReAttemptInterval(httpConfig, interval) {
 
-      if (request.debugEnabled) {
-        console.error('Queuing future requests for', circuitTimeout, 'ms');
-      }
+      // setInterval to retry request
+      var intervalPromise = $interval(function () {
 
-      // queue the current request which failed
-      queueRequest(request);
+        $http(httpConfig).then(function (res) {
 
-      $timeout(function () {
-        breakCircuit = false;
+          // ISSUE: how to let the application
+          // know that this occurred?
+          httpConfig.promise.resolve(res); // will not work since promise has already been rejected
 
-        attemptQueuedRequests();
-        console.info('Circuit timeout of', circuitTimeout, 'ms has been fulfilled.');
-      }, circuitTimeout);
+          // no longer retry
+          $interval.cancel(intervalPromise);
+        });
+
+      }, interval);
+
     }
 
-    /**
-     * Attempt making the request/promise
-     */
-    function attemptRequest(request) {
+    function makeRequest(httpConfig, retry) {
 
-      request.promise().then(function (res) {
-        request.response.resolve(res);
-      }).catch(function handleFailedRequest() {
+      $http(httpConfig).then(function (res) {
 
-        if (request.debugEnabled) {
-          console.info('request #', request.attempts + 1, 'failed.');
-        }
+        httpConfig.promise.resolve(res);
 
-        // increment failed attempts counter
-        // for request
-        request.attempts++;
+      }).catch(function () {
 
-        // if max retries for requests is not exceeded
-        if (request.attempts < request.maxRetry) {
+        // increment http attempt counter for this request
+        retry.attempts++;
 
-          if (request.debugEnabled) {
-            console.info('retrying in', request.retryTimeout, 'ms');
+        if (retry.attempts >= retry.max) {
+
+          // reject the promise to the service consumer
+          httpConfig.promise.reject('Max retried exhausted.');
+
+          if (retry.reAttemptOnFailure) {
+
+            setUpReAttemptInterval(httpConfig, retry.failTimeout);
+            denyAllFutureRequests();
+
           }
-
-          // retry request after [request.retryTimeout] ms have passed
-          $timeout(function () { attemptRequest(request); }, request.retryTimeout);
 
         } else {
-          if (request.debugEnabled) {
-            console.info('Limit of', request.maxRetry, 'requests reached.');
-            console.info('Breaking retry cycle.');
-          }
-
-          queueFutureRequests(request);
-          request.response.reject({ msg: 'Network is down. Please check your internet connection' });
+          makeRequest(httpConfig, retry);
         }
 
-        return request.response.promise;
       });
     }
 
-    /**
-     * Attempt a single request
-     * On Success: attempt all queued requests
-     * On Failure: break circuit again
-     */
-    function attemptQueuedRequests() {
-      var firstQueuedRequest = requestQueue.shift();
-      attemptRequest(firstQueuedRequest);
-    }
+    return function (providedRequestConfig) {
+      var response = $q.defer();
 
-    return function (requestPromise, retryCount, timeOut, debug) {
-      // gather parameters and set defaults
-      var request  = {
-        promise: requestPromise,
-        maxRetry: retryCount || 3,
-        retryTimeout: timeOut || 50,
-        debugEnabled: debug,
-        attempts: 0,
-        response: $q.defer() // promise which will be returned by this service
-      };
+      // build $http compatible config
+      var requestConfig     = parseConfig(providedRequestConfig);
+      requestConfig.promise = response;
 
-      // if a breakCircuit is in effect
-      if (breakCircuit) {
+      // retry configurations
+      var retryConfig = defaultRetryConfig;
 
-        // queue the request for
-        // when the circuit breaker
-        // timeout has been reached
-        queueRequest(request);
+      // make $http request
+      makeRequest(requestConfig, retryConfig);
 
-      } else {
-
-        attemptRequest(request);
-
-        if (request.debugEnabled) {
-          console.info('breakCircuit =', breakCircuit);
-          console.info('making $http request. Retry Info:', request.maxRetry, 'times @', request.retryTimeout, 'ms intervals');
-        }
-
-      }
-
-      return request.response.promise;
+      return response.promise;
     };
 
   }
 
+  angular.module('autoRetry', []);
+
   angular
     .module('autoRetry')
-    .factory('Retry', ['$q', '$timeout', retryService]);
+    .factory('$httpRetry', ['$http', '$q', '$interval', httpRetry]);
 
 }());
