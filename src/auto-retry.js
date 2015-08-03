@@ -83,7 +83,7 @@
         // setInterval to retry request
         var intervalPromise = $interval(function () {
 
-          $http({ method: 'GET', url: 'http://localhost:8080' }).then(function (res) {
+          $http(httpConfig).then(function (res) {
 
             // ISSUE: how to let the application
             // know that this occurred?
