@@ -4,7 +4,7 @@
  * Proof of Concept:
  *   Auto-retry of AJAX requests in AngularJS. 
  *   Details: https://inmarb2b.visualstudio.com/DefaultCollection/Portal/_backlogs#level=Backlog+items&showParents=false&_a=backlog
- * 
+ *
  */
 
 /**
@@ -12,26 +12,26 @@
  */
 (function () {
 
-  var demoCtrl = function (API, notifications) {
+  var demoCtrl = function ($scope, API, notifications) {
     var vm = this;
 
-    vm.makeRequest = function (times, interval) {
-      console.clear();
+    var token = PubSub.subscribe('failedRetries', function () {
 
-      API.makeFailingRequest(times, interval, true).then(function (res) {
-
-        console.log(res);
-
-      }).catch(function (e) {
+      $scope.$apply(function () {
 
         notifications.showError({
-          message: 'Your request could not be completed. We will auto-retry in x seconds',
-          error: e,
+          message: 'Network is down.',
         });
 
       });
 
+    });
+
+    vm.makeRequest = function (times, interval) {
+      console.clear();
+      API.makeFailingRequest(times, interval, true);
     };
+
   };
 
   function apiService($http, $httpRetry) {
@@ -45,9 +45,14 @@
       url: 'http://localhost:8080'
     };
 
-    this.makeFailingRequest = function (times, interval, debug) {
+    this.makeFailingRequest = function (times, interval) {
 
-      return $httpRetry(badRequestConfig).then(function (res) {
+      var retryParams = {
+        max: times,
+        interval: interval,
+      };
+
+      return $httpRetry(badRequestConfig, retryParams).then(function (res) {
         return res.data;
       }).catch(function (err) {
         return err;

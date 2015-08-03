@@ -7,6 +7,13 @@
 
   function httpRetry($http, $q, $interval) {
 
+    if (PubSub === 'undefined') {
+      console.group('PubSubJS dependency was not found.');
+      console.error('Please npm install auto-retry dependencies.');
+      console.error('Add dependent scripts to HTML.');
+      console.groupEnd();
+    }
+
     var defaults = {
       max: 3, // number of times to retry request
       interval: 50, // ms
@@ -45,6 +52,8 @@
           retry.attempts++;
 
           if (retry.attempts >= retry.max) {
+
+            PubSub.publish('failedRetries', 'Max retried have been exhausted.');
 
             // reject the promise to the service consumer
             httpConfig.promise.reject('Max retried exhausted.');
@@ -100,7 +109,7 @@
       }
     };
 
-    return function (providedRequestConfig) {
+    return function (providedRequestConfig, retryConfig) {
 
       var response = $q.defer();
 
