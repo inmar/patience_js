@@ -1,0 +1,15 @@
+{
+  "name": "591-auto-retry",
+  "version": "0.0.0",
+  "authors": [
+    "Afaq Tariq <atariq@inmar.com>"
+  ],
+  "license": "Private",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
