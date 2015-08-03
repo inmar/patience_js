@@ -13,6 +13,7 @@
     "tests"
   ],
   "dependencies": {
-    "angular-notify": "~2.5.0"
+    "angular-notify": "~2.5.0",
+    "animate.css": "~3.3.1"
   }
 }

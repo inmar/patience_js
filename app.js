@@ -12,29 +12,31 @@
  */
 (function () {
 
-  var demoCtrl = function ($scope, API, notifications) {
+  var demoCtrl = function ($scope, API, notify) {
     var vm = this;
+
+    vm.showNotification = function (notificationConfig) {
+      $scope.$apply(function () {
+        notify.closeAll();
+        vm.currentNotification = notify(notificationConfig);
+      });
+    };
+
 
     PubSub.subscribe('failedRetries', function () {
 
-      $scope.$apply(function () {
-
-        notifications.showError({
-          message: 'Network is down.',
-        });
-
+      vm.showNotification({
+        message: 'Network is down.',
+        position: 'right',
       });
 
     });
 
     PubSub.subscribe('reAttemptSuccessful', function () {
 
-      $scope.$apply(function () {
-
-        notifications.showSuccess({
-          message: 'Network is back up.',
-        });
-
+      vm.showNotification({
+        message: 'Network is back up.',
+        position: 'right',
       });
 
     });
@@ -84,7 +86,7 @@
    */
   angular.module('retryDemo', [
     'autoRetry',
-    'ngNotificationsBar'
+    'cgNotify'
   ]);
 
   angular
