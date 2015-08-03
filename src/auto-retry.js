@@ -28,7 +28,7 @@
         this.requests.push(httpConfig);
       },
       flush: function () {
-        // ISSUE: attempting to fullfil 
+        // ISSUE: attempting to fullfil
         // backlog http requests will flood server,
         // and cause performance issues.
         // Trying to control their flow will cause complexity.
@@ -94,6 +94,8 @@
 
           $http(httpConfig).then(function (res) {
 
+            PubSub.publish('reAttemptSuccessful', { msg: 'Re-attempt was successful.'});
+
             // ISSUE: how to let the application
             // know that this occurred?
             httpConfig.promise.resolve(res); // will not work since promise has already been rejec
@@ -125,11 +127,9 @@
 
       if (request.isBlocked) {
 
-        console.log('sorry, all requests are currently blocked.');
-
         queue.add(httpConfig);
 
-        httpConfig.promise.reject('Max retried exhausted.');
+        httpConfig.promise.reject({ msg: 'Max retried exhausted.' });
 
       } else {
 

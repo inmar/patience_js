@@ -2,7 +2,7 @@
 
 /**
  * Proof of Concept:
- *   Auto-retry of AJAX requests in AngularJS. 
+ *   Auto-retry of AJAX requests in AngularJS.
  *   Details: https://inmarb2b.visualstudio.com/DefaultCollection/Portal/_backlogs#level=Backlog+items&showParents=false&_a=backlog
  *
  */
@@ -15,12 +15,24 @@
   var demoCtrl = function ($scope, API, notifications) {
     var vm = this;
 
-    var token = PubSub.subscribe('failedRetries', function () {
+    PubSub.subscribe('failedRetries', function () {
 
       $scope.$apply(function () {
 
         notifications.showError({
           message: 'Network is down.',
+        });
+
+      });
+
+    });
+
+    PubSub.subscribe('reAttemptSuccessful', function () {
+
+      $scope.$apply(function () {
+
+        notifications.showSuccess({
+          message: 'Network is back up.',
         });
 
       });
