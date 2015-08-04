@@ -79,7 +79,7 @@
 
         $http(httpConfig).then(function (res) {
 
-          httpConfig.promise.resolve(res);
+          httpConfig.response.resolve(res);
 
         }).catch(function () {
 
@@ -91,7 +91,7 @@
             PubSub.publish('failedRetries', 'Max retried have been exhausted.');
 
             // reject the promise to the service consumer
-            httpConfig.promise.reject('Max retried exhausted.');
+            httpConfig.response.reject('Max retried exhausted.');
 
             if (retry.reAttemptOnFailure) {
 
@@ -108,19 +108,8 @@
         });
       },
       parseConfig: function (config) {
-        var parsedConfig = {};
-
-        // check for usage of get request short-hand
-        if (typeof config === 'string') {
-          parsedConfig = {
-            url: config,
-            method: 'GET',
-          };
-        } else {
-          parsedConfig = config;
-        }
-
-        return parsedConfig;
+        config.response = $q.defer();
+        return config;
       },
       setUpReAttemptInterval: function (httpConfig, interval) {
 
@@ -133,7 +122,7 @@
 
             // ISSUE: how to let the application
             // know that this occurred?
-            httpConfig.promise.resolve(res); // will not work since promise has already been rejec
+            httpConfig.response.resolve(res); // will not work since promise has already been rejec
 
             // no longer retry
             $interval.cancel(intervalPromise);
@@ -148,21 +137,16 @@
 
     return function (providedRequestConfig, providedRetryConfig) {
 
-      var response = $q.defer();
       var httpConfig  = request.parseConfig(providedRequestConfig);
       var retryConfig = retry.parseConfig(providedRetryConfig);
 
       retry.checkIfPubSubJSIsPresent();
 
-      // attach a promise,
-      // which is the response to this request
-      httpConfig.promise = response;
-
       if (request.isBlocked) {
 
         queue.add(httpConfig);
 
-        httpConfig.promise.reject({ msg: 'Max retried exhausted.' });
+        httpConfig.response.reject({ msg: 'Max retried exhausted.' });
 
       } else {
 
@@ -170,7 +154,7 @@
         request.attempt(httpConfig, retryConfig);
       }
 
-      return response.promise;
+      return httpConfig.response.promise;
     };
 
   }

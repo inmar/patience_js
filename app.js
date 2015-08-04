@@ -70,14 +70,10 @@
           interval: interval,
         };
 
-        console.log(times, interval);
-        console.log('sending in', retryParams);
         request = $httpRetry(badRequestConfig, retryParams);
       } else {
         request = $httpRetry(badRequestConfig);
       }
-
-      debugger;
 
       return request.then(function (res) {
         return res.data;
