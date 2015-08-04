@@ -7,21 +7,52 @@
 
   function httpRetry($http, $q, $interval) {
 
-    if (PubSub === 'undefined') {
-      console.group('PubSubJS dependency was not found.');
-      console.error('Please npm install auto-retry dependencies.');
-      console.error('Add dependent scripts to HTML.');
-      console.groupEnd();
-    }
-
-    var defaults = {
+    /**
+     * POJO of retry globals and functions.
+     * @type {Object}
+     */
+    var retry = {
+      defaults : {
       max: 3, // number of times to retry request
       interval: 50, // ms
       failTimeout: 5000, //ms
       reAttemptOnFailure: true,
       attempts: 0,
+      },
+      parseConfig: function (providedConfig) {
+        if (!providedConfig || Object.keys(providedConfig).length === 0) {
+          return this.defaults;
+        } else {
+          return this.overrideRetryDefaults(providedConfig);
+        }
+      },
+      overrideRetryDefaults: function (providedConfig) {
+        var resultConfig = {};
+        var retry        = this;
+
+        Object.keys(this.defaults).map(function (key) {
+          resultConfig[key] = providedConfig[key] || retry.defaults[key];
+        });
+
+        return resultConfig;
+      },
+      checkIfPubSubJSIsPresent: function () {
+        if (PubSub === 'undefined') {
+          console.group('PubSubJS dependency was not found.');
+          console.error('Please npm install auto-retry dependencies.');
+          console.error('Add dependent scripts to HTML.');
+          console.groupEnd();
+          return false;
+        }
+
+        return true;
+      }
     };
 
+    /**
+     * POJO of queue operations and globals.
+     * @type {Object}
+     */
     var queue = {
       requests: [],
       add: function (httpConfig) {
@@ -36,6 +67,10 @@
       }
     };
 
+    /**
+     * POJO of request-based logic and globals.
+     * @type {Object}
+     */
     var request = {
       isBlocked: false,
       attempt: function (httpConfig, retry) {
@@ -111,19 +146,17 @@
       }
     };
 
-    return function (providedRequestConfig, retryConfig) {
+    return function (providedRequestConfig, providedRetryConfig) {
 
       var response = $q.defer();
+      var httpConfig  = request.parseConfig(providedRequestConfig);
+      var retryConfig = retry.parseConfig(providedRetryConfig);
 
-      // build $http compatible config
-      var httpConfig     = request.parseConfig(providedRequestConfig);
+      retry.checkIfPubSubJSIsPresent();
 
-      // attach a promise, which represents
-      // a response to request
+      // attach a promise,
+      // which is the response to this request
       httpConfig.promise = response;
-
-      // retry configurations
-      var retryConfig    = defaults;
 
       if (request.isBlocked) {
 

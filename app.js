@@ -61,12 +61,25 @@
 
     this.makeFailingRequest = function (times, interval) {
 
-      var retryParams = {
-        max: times,
-        interval: interval,
-      };
+      var retryParams;
+      var request;
 
-      return $httpRetry(badRequestConfig, retryParams).then(function (res) {
+      if (times !== undefined && interval !== undefined) {
+        retryParams = {
+          max: times,
+          interval: interval,
+        };
+
+        console.log(times, interval);
+        console.log('sending in', retryParams);
+        request = $httpRetry(badRequestConfig, retryParams);
+      } else {
+        request = $httpRetry(badRequestConfig);
+      }
+
+      debugger;
+
+      return request.then(function (res) {
         return res.data;
       }).catch(function (err) {
         return err;
