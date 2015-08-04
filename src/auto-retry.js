@@ -73,9 +73,9 @@
      */
     var request = {
       isBlocked: false,
-      intiate: function (providedRequestConfig, providedRequestConfig) {
+      intiate: function (providedRequestConfig, providedRetryConfig) {
         var httpConfig  = this.parseConfig(providedRequestConfig);
-        var retryConfig = retry.parseConfig(providedRequestConfig);
+        var retryConfig = retry.parseConfig(providedRetryConfig);
 
         if (this.isBlocked) {
           queue.add(httpConfig);
@@ -85,7 +85,7 @@
         }
 
         return httpConfig.response.promise;
-      }
+      },
       attempt: function (httpConfig, retry) {
 
         var self = this;
@@ -148,12 +148,12 @@
       }
     };
 
-    return function (providedRequestConfig, providedRetryConfig) {
+    return function (providedHttpConfig, providedRetryConfig) {
 
       retry.checkIfPubSubJSIsPresent();
 
       // Make the AJAX request
-      return request.intiate(httpConfig, retryConfig);
+      return request.intiate(providedHttpConfig, providedRetryConfig);
     };
 
   }
