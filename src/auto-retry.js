@@ -73,6 +73,19 @@
      */
     var request = {
       isBlocked: false,
+      intiate: function (providedRequestConfig, providedRequestConfig) {
+        var httpConfig  = this.parseConfig(providedRequestConfig);
+        var retryConfig = retry.parseConfig(providedRequestConfig);
+
+        if (this.isBlocked) {
+          queue.add(httpConfig);
+          httpConfig.response.reject({ msg: 'Max retried exhausted.' });
+        } else {
+          this.attempt(httpConfig, retryConfig);
+        }
+
+        return httpConfig.response.promise;
+      }
       attempt: function (httpConfig, retry) {
 
         var self = this;
@@ -137,24 +150,10 @@
 
     return function (providedRequestConfig, providedRetryConfig) {
 
-      var httpConfig  = request.parseConfig(providedRequestConfig);
-      var retryConfig = retry.parseConfig(providedRetryConfig);
-
       retry.checkIfPubSubJSIsPresent();
 
-      if (request.isBlocked) {
-
-        queue.add(httpConfig);
-
-        httpConfig.response.reject({ msg: 'Max retried exhausted.' });
-
-      } else {
-
-        // make $http request
-        request.attempt(httpConfig, retryConfig);
-      }
-
-      return httpConfig.response.promise;
+      // Make the AJAX request
+      return request.intiate(httpConfig, retryConfig);
     };
 
   }
