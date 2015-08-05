@@ -17,7 +17,6 @@
       interval: 50, // ms
       failTimeout: 5000, //ms
       reAttemptOnFailure: true,
-      attempts: 0,
       },
       parseConfig: function (providedConfig) {
         if (!providedConfig || Object.keys(providedConfig).length === 0) {
@@ -50,24 +49,6 @@
     };
 
     /**
-     * POJO of queue operations and globals.
-     * @type {Object}
-     */
-    var queue = {
-      requests: [],
-      add: function (httpConfig) {
-        this.requests.push(httpConfig);
-      },
-      flush: function () {
-        // ISSUE: attempting to fullfil
-        // backlog http requests will flood server,
-        // and cause performance issues.
-        // Trying to control their flow will cause complexity.
-        this.requests = [];
-      }
-    };
-
-    /**
      * POJO of request-based logic and globals.
      * @type {Object}
      */
@@ -75,20 +56,19 @@
       isBlocked: false,
       intiate: function (providedRequestConfig, providedRetryConfig) {
         var httpConfig  = this.parseConfig(providedRequestConfig);
-        var retryConfig = retry.parseConfig(providedRetryConfig);
 
         if (this.isBlocked) {
-          queue.add(httpConfig);
-          httpConfig.response.reject({ msg: 'Max retried exhausted.' });
+          httpConfig.response.reject({ msg: 'Cannot process request at this time. Please wait or refresh browser and try again.' });
         } else {
-          this.attempt(httpConfig, retryConfig);
+          this.attempt(httpConfig, providedRetryConfig);
         }
 
         return httpConfig.response.promise;
       },
-      attempt: function (httpConfig, retry) {
+      attempt: function (httpConfig, providedRetryConfig) {
 
-        var self = this;
+        var req = this;
+        var retryConfig = retry.parseConfig(providedRetryConfig);
 
         $http(httpConfig).then(function (res) {
 
@@ -97,32 +77,33 @@
         }).catch(function () {
 
           // increment http attempt counter for this request
-          retry.attempts++;
+          httpConfig.attempts++;
 
-          if (retry.attempts >= retry.max) {
+          if (httpConfig.attempts >= retryConfig.max) {
 
             PubSub.publish('failedRetries', 'Max retried have been exhausted.');
 
             // reject the promise to the service consumer
             httpConfig.response.reject('Max retried exhausted.');
 
-            if (retry.reAttemptOnFailure) {
+            if (retryConfig.reAttemptOnFailure) {
 
-              self.setUpReAttemptInterval(httpConfig, retry.failTimeout);
+              req.setUpReAttemptInterval(httpConfig, retryConfig.failTimeout);
 
               // set a flag to block future requests
-              self.isBlocked = true;
+              req.isBlocked = true;
 
             }
           } else {
-            self.attempt(httpConfig, retry);
+            req.attempt(httpConfig, retryConfig);
           }
 
         });
       },
-      parseConfig: function (config) {
-        config.response = $q.defer();
-        return config;
+      parseConfig: function (httpConfig) {
+        httpConfig.response = $q.defer();
+        httpConfig.attempts = 0;
+        return httpConfig;
       },
       setUpReAttemptInterval: function (httpConfig, interval) {
 
@@ -131,7 +112,7 @@
 
           $http(httpConfig).then(function (res) {
 
-            PubSub.publish('reAttemptSuccessful', { msg: 'Re-attempt was successful.'});
+            PubSub.publish('reAttemptSuccessful', {msg: 'Re-attempt was successful.'});
 
             // ISSUE: how to let the application
             // know that this occurred?
@@ -139,9 +120,6 @@
 
             // no longer retry
             $interval.cancel(intervalPromise);
-
-            // release queued requests
-            queue.flush();
           });
 
         }, interval);
