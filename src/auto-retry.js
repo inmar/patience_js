@@ -105,6 +105,9 @@
 
           // no longer retry
           clearInterval(intervalPromise);
+        }).catch(function () {
+          // prevents uncaught promise failure warning
+          return;
         });
 
       }, interval);
@@ -127,6 +130,6 @@
       else {
           window[name] = obj;
       }
-  })('AutoRetry', AjaxRetry);
+  })('AjaxRetry', AjaxRetry);
 
 })();
