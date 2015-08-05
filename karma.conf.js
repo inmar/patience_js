@@ -4,6 +4,8 @@ module.exports = function(config){
         basePath : './',
 
         files : [
+            'node_modules/sinon/pkg/sinon.js',
+            'node_modules/sinon-stub-promise/index.js',
             'node_modules/q/q.js',
             'node_modules/jasmine-ajax/lib/mock-ajax.js',
             'src/auto-retry.js',

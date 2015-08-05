@@ -8,6 +8,10 @@ gulp.task('default', ['help']);
 
 gulp.task('test', function () {
   return gulp.src([
+            'node_modules/sinon/pkg/sinon.js',
+            'node_modules/sinon-stub-promise/index.js',
+            'node_modules/axios/dist/axios.min.js',
+            'node_modules/pubsub-js/src/pubsub.js',
             'node_modules/q/q.js',
             'node_modules/jasmine-ajax/lib/mock-ajax.js',
             'src/auto-retry.js',
