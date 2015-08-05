@@ -1,145 +1,132 @@
-/**
- * Name: Retry Module
- * Desc: $http wrapper which includes retry functionality.
- *
- */
 (function () {
 
-  function httpRetry($http, $q, $interval) {
+  'use strict';
 
-    /**
-     * POJO of retry globals and functions.
-     * @type {Object}
-     */
-    var retry = {
-      defaults : {
+  /**
+   * POJO of retry globals and functions.
+   * @type {Object}
+   */
+  var retry = {
+    defaults : {
       max: 3, // number of times to retry request
       interval: 50, // ms
       failTimeout: 5000, //ms
       reAttemptOnFailure: true,
-      },
-      parseConfig: function (providedConfig) {
-        if (!providedConfig || Object.keys(providedConfig).length === 0) {
-          return this.defaults;
-        } else {
-          return this.overrideRetryDefaults(providedConfig);
-        }
-      },
-      overrideRetryDefaults: function (providedConfig) {
-        var resultConfig = {};
-        var retry        = this;
-
-        Object.keys(this.defaults).map(function (key) {
-          resultConfig[key] = providedConfig[key] || retry.defaults[key];
-        });
-
-        return resultConfig;
-      },
-      checkIfPubSubJSIsPresent: function () {
-        if (PubSub === 'undefined') {
-          console.group('PubSubJS dependency was not found.');
-          console.error('Please npm install auto-retry dependencies.');
-          console.error('Add dependent scripts to HTML.');
-          console.groupEnd();
-          return false;
-        }
-
-        return true;
+    },
+    parseConfig: function (providedConfig) {
+      if (!providedConfig || Object.keys(providedConfig).length === 0) {
+        return this.defaults;
+      } else {
+        return this.overrideRetryDefaults(providedConfig);
       }
-    };
+    },
+    overrideRetryDefaults: function (providedConfig) {
+      var resultConfig = {};
+      var retry        = this;
 
-    /**
-     * POJO of request-based logic and globals.
-     * @type {Object}
-     */
-    var request = {
-      isBlocked: false,
-      intiate: function (providedRequestConfig, providedRetryConfig) {
-        var httpConfig  = this.parseConfig(providedRequestConfig);
+      Object.keys(this.defaults).map(function (key) {
+        resultConfig[key] = providedConfig[key] || retry.defaults[key];
+      });
 
-        if (this.isBlocked) {
-          httpConfig.response.reject({ msg: 'Cannot process request at this time. Please wait or refresh browser and try again.' });
-        } else {
-          this.attempt(httpConfig, providedRetryConfig);
-        }
+      return resultConfig;
+    },
+    initiate: function (providedRequestConfig, providedRetryConfig, $httpLibrary, $promiseLibrary) {
 
-        return httpConfig.response.promise;
-      },
-      attempt: function (httpConfig, providedRetryConfig) {
+      var httpConfig  = request.parseConfig(providedRequestConfig);
 
-        var req = this;
-        var retryConfig = retry.parseConfig(providedRetryConfig);
+      if (request.isBlocked) {
+        httpConfig.response.reject({ msg: 'Cannot process request at this time. Please wait or refresh browser and try again.' });
+      } else {
+        request.attempt(httpConfig, providedRetryConfig);
+      }
 
-        $http(httpConfig).then(function (res) {
+      return httpConfig.response.promise;
+    }
+  };
 
-          httpConfig.response.resolve(res);
+  /**
+   * POJO of request-based logic and globals.
+   * @type {Object}
+   */
+  var request = {
+    isBlocked: false,
+    attempt: function (httpConfig, providedRetryConfig) {
 
-        }).catch(function () {
+      var req = this;
+      var retryConfig = retry.parseConfig(providedRetryConfig);
 
-          // increment http attempt counter for this request
-          httpConfig.attempts++;
+      axios(httpConfig).then(function (res) {
 
-          if (httpConfig.attempts >= retryConfig.max) {
+        httpConfig.response.resolve(res);
 
-            PubSub.publish('failedRetries', 'Max retried have been exhausted.');
+      }).catch(function () {
 
-            // reject the promise to the service consumer
-            httpConfig.response.reject('Max retried exhausted.');
+        // increment http attempt counter for this request
+        httpConfig.attempts++;
 
-            if (retryConfig.reAttemptOnFailure) {
+        if (httpConfig.attempts >= retryConfig.max) {
 
-              req.setUpReAttemptInterval(httpConfig, retryConfig.failTimeout);
+          PubSub.publish('failedRetries', 'Max retried have been exhausted.');
 
-              // set a flag to block future requests
-              req.isBlocked = true;
+          // reject the promise to the service consumer
+          httpConfig.response.reject('Max retried exhausted.');
 
-            }
-          } else {
-            req.attempt(httpConfig, retryConfig);
+          if (retryConfig.reAttemptOnFailure) {
+
+            req.setUpReAttemptInterval(httpConfig, retryConfig.failTimeout);
+
+            // set a flag to block future requests
+            req.isBlocked = true;
+
           }
+        } else {
+          req.attempt(httpConfig, retryConfig);
+        }
 
+      });
+    },
+    parseConfig: function (httpConfig) {
+      httpConfig.response = Q.defer();
+      httpConfig.attempts = 0;
+      return httpConfig;
+    },
+    setUpReAttemptInterval: function (httpConfig, interval) {
+
+      // setInterval to retry request
+      var intervalPromise = setInterval(function () {
+
+        axios(httpConfig).then(function (res) {
+
+          PubSub.publish('reAttemptSuccessful', {msg: 'Re-attempt was successful.'});
+
+          // ISSUE: how to let the application
+          // know that this occurred?
+          httpConfig.response.resolve(res); // will not work since promise has already been rejec
+
+          // no longer retry
+          clearInterval(intervalPromise);
         });
-      },
-      parseConfig: function (httpConfig) {
-        httpConfig.response = $q.defer();
-        httpConfig.attempts = 0;
-        return httpConfig;
-      },
-      setUpReAttemptInterval: function (httpConfig, interval) {
 
-        // setInterval to retry request
-        var intervalPromise = $interval(function () {
+      }, interval);
+    }
+  };
 
-          $http(httpConfig).then(function (res) {
+  var AjaxRetry = function (providedRequestConfig, providedRetryConfig) {
 
-            PubSub.publish('reAttemptSuccessful', {msg: 'Re-attempt was successful.'});
+    return retry.initiate(providedRequestConfig, providedRetryConfig);
 
-            // ISSUE: how to let the application
-            // know that this occurred?
-            httpConfig.response.resolve(res); // will not work since promise has already been rejec
+  };
 
-            // no longer retry
-            $interval.cancel(intervalPromise);
-          });
+  (function(name, obj) {
 
-        }, interval);
+      var commonJS = typeof module != 'undefined' && module.exports;
+
+      if (commonJS) {
+          module.exports = obj;
       }
-    };
+      else {
+          window[name] = obj;
+      }
+  })('AutoRetry', AjaxRetry);
 
-    return function (providedHttpConfig, providedRetryConfig) {
-
-      retry.checkIfPubSubJSIsPresent();
-
-      // Make the AJAX request
-      return request.intiate(providedHttpConfig, providedRetryConfig);
-    };
-
-  }
-
-  angular.module('autoRetry', []);
-
-  angular
-    .module('autoRetry')
-    .factory('$httpRetry', ['$http', '$q', '$interval', httpRetry]);
-
-}());
+})();

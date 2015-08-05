@@ -13,8 +13,9 @@
   "author": "afaq.tariq@inmar.com",
   "license": "ISC",
   "dependencies": {
-    "q": "^1.4.1",
-    "pubsub-js": "^1.5.2"
+    "axios": "^0.5.4",
+    "pubsub-js": "^1.5.2",
+    "q": "^1.4.1"
   },
   "devDependencies": {
     "del": "^1.2.0",
