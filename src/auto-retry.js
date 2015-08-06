@@ -12,6 +12,7 @@
       interval: 50, // ms
       failTimeout: 5000, //ms
       reAttemptOnFailure: true,
+      maxReAttempts: 2
     },
     parseConfig: function (providedConfig) {
       if (!providedConfig || Object.keys(providedConfig).length === 0) {
@@ -72,8 +73,9 @@
           httpConfig.response.reject('Max retried exhausted.');
 
           if (retryConfig.reAttemptOnFailure) {
-
-            req.setUpReAttemptInterval(httpConfig, retryConfig.failTimeout);
+            var failTimeout = retryConfig.failTimeout;
+            var maxReAttempts = retryConfig.maxReAttempts;
+            req.setUpReAttemptInterval(httpConfig, failTimeout, maxReAttempts);
 
             // set a flag to block future requests
             req.isBlocked = true;
@@ -88,30 +90,47 @@
     parseConfig: function (httpConfig) {
       httpConfig.response = Q.defer();
       httpConfig.attempts = 0;
+      httpConfig._reAttempts = 0;
       return httpConfig;
     },
-    setUpReAttemptInterval: function (httpConfig, interval) {
+    reAttempt: function () {
 
-      // setInterval to retry request
-      var intervalPromise = setInterval(function () {
+      axios(httpConfig).then(function (res) {
+        PubSub.publish('reAttemptSuccessful', {msg: 'Re-attempt was successful.'});
+
+        // ISSUE: how to let the application know that this occurred?
+        httpConfig.response.resolve(res);
+
+      }).catch(function () {
+        httpConfig._reAttempts++;
+        self.reAttempt(httpConfig, interval, maxReAttempts)
+        return;
+      });
+
+    },
+    setUpReAttemptInterval: function reAttempt (httpConfig, interval, maxReAttempts) {
+
+      if (httpConfig._reAttempts >= maxReAttempts) {
+        httpConfig.response.reject({ msg: 'Max re-attempts reached.'});
+        return;
+      };
+
+      setTimeout(function () {
 
         axios(httpConfig).then(function (res) {
-
           PubSub.publish('reAttemptSuccessful', {msg: 'Re-attempt was successful.'});
 
-          // ISSUE: how to let the application
-          // know that this occurred?
-          httpConfig.response.resolve(res); // will not work since promise has already been rejec
+          // ISSUE: how to let the application know that this occurred?
+          httpConfig.response.resolve(res);
 
-          // no longer retry
-          clearInterval(intervalPromise);
         }).catch(function () {
-          // prevents uncaught promise failure warning
-          return;
+          httpConfig._reAttempts++;
+          reAttempt(httpConfig, interval, maxReAttempts);
         });
 
       }, interval);
-    }
+
+    },
   };
 
   var AjaxRetry = function (providedRequestConfig, providedRetryConfig) {
