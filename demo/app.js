@@ -12,43 +12,38 @@
  */
 (function () {
 
-  var demoCtrl = function ($scope, API, notify) {
+  function UIMessage(notify) {
+    return {
+      show: function (message) {
+        return notify({
+          message: message,
+          position: 'right',
+        });
+      },
+      clearAllAndShow: function (message) {
+        notify.closeAll();
+        this.show(message);
+      }
+    };
+  };
+
+  function demoCtrl($scope, API, UIMessage) {
     var vm = this;
 
-    vm.showNotification = function (notificationConfig) {
-      $scope.$apply(function () {
-        notify.closeAll();
-        vm.currentNotification = notify(notificationConfig);
-      });
-    };
-
-
-    PubSub.subscribe('failedRetries', function () {
-
-      vm.showNotification({
-        message: 'Network is down.',
-        position: 'right',
-      });
-
-    });
-
     PubSub.subscribe('reAttemptSuccessful', function () {
-
-      vm.showNotification({
-        message: 'Network is back up.',
-        position: 'right',
-      });
-
+      UIMessage.show('Network is back up.');
     });
 
     vm.makeRequest = function (times, interval) {
       console.clear();
-      API.makeFailingRequest(times, interval, true);
+      API.makeFailingRequest(times, interval, true).then(function (res){
+        console.log('API response:', res);
+      });
     };
 
   };
 
-  function apiService($http, $httpRetry) {
+  function apiService($http, $httpRetry, UIMessage) {
     var badRequestConfig  = {
       method: 'GET',
       url: 'http://localhost:8080/bad-url'
@@ -61,8 +56,7 @@
 
     this.makeFailingRequest = function (times, interval) {
 
-      var retryParams;
-      var request;
+      var retryParams, request;
 
       if (times !== undefined && interval !== undefined) {
         retryParams = {
@@ -78,6 +72,7 @@
       return request.then(function (res) {
         return res.data;
       }).catch(function (err) {
+        UIMessage.clearAllAndShow('Your request has failed. Please try again.');
         return err;
       });
 
@@ -100,7 +95,8 @@
 
   angular
     .module('retryDemo')
-    .service('API', ['$http', '$httpRetry', apiService])
+    .service('API', ['$http', '$httpRetry', 'UIMessage', apiService])
+    .factory('UIMessage', ['notify', UIMessage])
     .controller('demoCtrl', demoCtrl);
 
 }());

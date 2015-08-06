@@ -60,28 +60,30 @@
 
         httpConfig.response.resolve(res);
 
-      }).catch(function () {
+      }).catch(function (err) {
 
         // increment http attempt counter for this request
         httpConfig.attempts++;
 
         if (httpConfig.attempts >= retryConfig.max) {
 
-          PubSub.publish('failedRetries', 'Max retried have been exhausted.');
+          var rejectionMessage = 'Max retries exhausted.';
 
-          // reject the promise to the service consumer
-          httpConfig.response.reject('Max retried exhausted.');
-
+          // retries have failed, begin re-attempts
           if (retryConfig.reAttemptOnFailure) {
-            var failTimeout = retryConfig.failTimeout;
-            var maxReAttempts = retryConfig.maxReAttempts;
-            req.setUpReAttemptInterval(httpConfig, failTimeout, maxReAttempts);
+
+            req.setUpReAttemptInterval(httpConfig, retryConfig);
 
             // set a flag to block future requests
             req.isBlocked = true;
 
+            httpConfig.response.notify();
+          } else {
+            httpConfig.response.reject(err);
           }
+
         } else {
+          httpConfig.response.notify(httpConfig.attempts);
           req.attempt(httpConfig, retryConfig);
         }
 
@@ -108,9 +110,10 @@
       });
 
     },
-    setUpReAttemptInterval: function reAttempt (httpConfig, interval, maxReAttempts) {
+    setUpReAttemptInterval: function reAttempt (httpConfig, retryConfig) {
 
-      if (httpConfig._reAttempts >= maxReAttempts) {
+
+      if (httpConfig._reAttempts >= retryConfig.maxReAttempts) {
         httpConfig.response.reject({ msg: 'Max re-attempts reached.'});
         return;
       };
@@ -119,16 +122,13 @@
 
         axios(httpConfig).then(function (res) {
           PubSub.publish('reAttemptSuccessful', {msg: 'Re-attempt was successful.'});
-
-          // ISSUE: how to let the application know that this occurred?
           httpConfig.response.resolve(res);
-
         }).catch(function () {
           httpConfig._reAttempts++;
-          reAttempt(httpConfig, interval, maxReAttempts);
+          reAttempt(httpConfig, retryConfig);
         });
 
-      }, interval);
+      }, retryConfig.failTimeout);
 
     },
   };
