@@ -3,7 +3,7 @@ describe('--', function(){
     var ajaxRetry;
 
     beforeEach(function(){
-        ajaxRetry = AjaxRetry;
+        ajaxRetry = AjaxRetry();
     });
 
     it('should be present', function(){
@@ -18,63 +18,131 @@ describe('--', function(){
     describe('Initial Call', function(){
 
         it('should return a promise', function(){
-            expect(ajaxRetry(requestParams).then).not.toBeNull();
+            var ajaxRetryPromise = ajaxRetry
+                                        .request(requestParams)
+                                        .retry()
+                                        .run()
+                                        .then;
+
+            expect(ajaxRetryPromise).not.toBeNull();
         });
     });
 
     describe('Retry Functionality', function(){
 
-        var requestParams, axiosStub;
+        var requestParams, customRetryParams, firstRetry;
 
         beforeEach(function(){
-            axiosStub = sinon.stub(window, 'axios').returnsPromise();
-
             requestParams = {};
+            customRetryParams   = {
+                max: 15,
+                interval: -5,
+            };
+
+            spyOn(window, 'Qretry').and.callThrough();
+
+            // first call
+            ajaxRetry
+                .request(requestParams)
+                .retry()
+                .reAttempt()
+                .run();
+
+            // second call
+            firstRetry = ajaxRetry
+                .request(requestParams)
+                .retry(customRetryParams)
+                .reAttempt();
+
+            spyOn(firstRetry, '_doRequest').and.callFake(function () {
+                console.log('sadgsaga');
+            });
+
+            firstRetry.run();
+
         });
 
-        afterEach(function () {
-            window.axios.restore();
-            axiosStub.restore();
+        it('should call Qretry to setup retry strategy', function(){
+            expect(window.Qretry.calls.any()).toEqual(true);
         });
 
-        it('should call axios library for AJAX', function(){
-            axiosStub.resolves({});
-            ajaxRetry(requestParams);
+        it('should call Qretry with default retry params', function(){
+            var args = window.Qretry.calls.argsFor(0);
+            var defaults = {
+                max: 2,
+                interval: 100,
+                intervalMultiplicator: 1,
+                maxRetry: 1,
+            };
 
-            expect(axiosStub.callCount).toEqual(1);
+            expect(args[1]).toEqual(defaults);
         });
 
-        it('should retry according to default preset', function(){
-            axiosStub.rejects({});
-            ajaxRetry(requestParams);
+        it('should override default retry params with custom call', function(){
 
-            expect(axiosStub.callCount).toEqual(3);
+            var args = window.Qretry.calls.argsFor(1);
+            var expectedArgs = {
+                max: customRetryParams.max,
+                interval: customRetryParams.interval,
+                intervalMultiplicator: 1,
+                maxRetry: customRetryParams.max - 1
+            };
+
+            expect(args[1]).toEqual(expectedArgs);
         });
-
     });
 
-    describe('Retry Configure', function(){
+    describe('Re-attempt Functionality', function () {
 
-        var requestParams;
+        var customRetryCall, reattemptParams;
 
-        beforeEach(function(){
-            axiosStub = sinon.stub(window, 'axios').returnsPromise();
-
-            requestParams = {};
+        beforeEach(function () {
+            spyOn(window, 'Qretry').and.callThrough();
         });
 
-        afterEach(function () {
-            window.axios.restore();
+        it('should call Qretry with re-attempt default options', function () {
+
+            var retryCall = ajaxRetry
+                            .request()
+                            .retry()
+                            .reAttempt();
+
+            retryCall._doReAttempt();
+
+            var args = Qretry.calls.argsFor(0);
+            var expected = {
+                max: 3,
+                interval: 1000,
+                intervalMultiplicator: 1,
+                maxRetry: 2,
+            };
+
+            expect(args[1]).toEqual(expected);
         });
 
-        it('should retry according to provided config', function(){
+        it('should override default options for re-attempt', function () {
 
-            var retryConfig = { max: 5 };
+            var reattemptParams = {
+                max: 100,
+                interval: '845348'
+            };
 
-            axiosStub.rejects({});
-            ajaxRetry(requestParams, retryConfig);
+            var customRetryCall = ajaxRetry
+                                .request()
+                                .retry()
+                                .reAttempt(reattemptParams);
 
-            expect(axiosStub.callCount).toEqual(5);
+            customRetryCall._doReAttempt();
+
+            var args = Qretry.calls.argsFor(0);
+            var expected = {
+                max: reattemptParams.max,
+                maxRetry: reattemptParams.max - 1,
+                intervalMultiplicator: 1,
+                interval: reattemptParams.interval
+            };
+
+            expect(args[1]).toEqual(expected);
         });
 
     });

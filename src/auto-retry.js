@@ -12,7 +12,7 @@
         intervalMultiplicator: 1,
       },
       reAttempt: {
-        max: 2,
+        max: 3,
         interval: 1000,
         intervalMultiplicator: 1,
       }
@@ -36,35 +36,41 @@
   };
   var messages = {
     retryFailed: 'Request failed.',
-    reAttemptsFailed: 'Re-attempt of request failed.',
+    reAttemptsFailed: 'Re-attempts of request failed.',
     requestsBlocked: 'Requests are currently blocked by Retry library.',
   };
 
-  var AjaxRetry = function (providedRequestConfig, providedRetryConfig) {
+  var AjaxRetry = function () {
 
     return {
+      _doRequest: function () {
+        return axios(this._requestParams);
+      },
       _doRetry: function (response) {
-        this._retryParams.maxRetry = this._retryParams.max;
+        this._retryParams.maxRetry = this._retryParams.max - 1;
         var self = this;
 
         // Retry
         Qretry(function () {
-
-          return axios(self._requestParams);
-
+          return self._doRequest();
         }, self._retryParams).then(function (res) {
 
           response.resolve(res);
 
         }).catch(function () {
 
-          // block future calls
-          requestsBlocked = true;
-
           PubSub.publish('retriesFailed', messages.retryFailed);
           response.notify(messages.retryFailed);
 
-          self._doReAttempt(response);
+          if (self._reAttemptParams) {
+            // block future async calls
+            requestsBlocked = true;
+
+            self._doReAttempt(response);
+
+          } else {
+            response.reject(retryFailed);
+          }
 
         });
 
@@ -118,8 +124,12 @@
         }
 
         return response.promise;
+      },
+      getStatus: function () {
+        return requestsBlocked;
       }
     };
+
   };
 
   (function(name, obj) {

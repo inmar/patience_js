@@ -7,6 +7,7 @@ module.exports = function(config){
             'node_modules/sinon/pkg/sinon.js',
             'node_modules/sinon-stub-promise/index.js',
             'node_modules/q/q.js',
+            'node_modules/qretry/build/qretry.min.js',
             'node_modules/jasmine-ajax/lib/mock-ajax.js',
             'src/auto-retry.js',
             'src/autoRetrySpec.js'

@@ -13,6 +13,7 @@ gulp.task('test', function () {
             'node_modules/axios/dist/axios.min.js',
             'node_modules/pubsub-js/src/pubsub.js',
             'node_modules/q/q.js',
+            'node_modules/qretry/build/qretry.min.js',
             'node_modules/jasmine-ajax/lib/mock-ajax.js',
             'src/auto-retry.js',
             'src/autoRetrySpec.js'])
