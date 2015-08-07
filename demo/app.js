@@ -54,27 +54,25 @@
       url: 'http://localhost:8080'
     };
 
-    this.makeFailingRequest = function (times, interval) {
+    this.makeFailingRequest = function () {
 
       var retryParams, request;
 
-      if (times !== undefined && interval !== undefined) {
-        retryParams = {
-          max: times,
-          interval: interval,
-        };
-
-        request = $httpRetry(badRequestConfig, retryParams);
-      } else {
-        request = $httpRetry(badRequestConfig);
-      }
-
-      return request.then(function (res) {
-        return res.data;
-      }).catch(function (err) {
-        UIMessage.clearAllAndShow('Your request has failed. Please try again.');
-        return err;
-      });
+      return $httpRetry
+        .request(badRequestConfig)
+        .retry()
+        .reAttempt()
+        .run()
+        .then(function (res) {
+          console.log('done with request:', res);
+          return res;
+        })
+        .catch(function (err) {
+          console.log('failed request', err);
+        })
+        .progress(function (msg) {
+          console.log(msg);
+        });
 
     };
 

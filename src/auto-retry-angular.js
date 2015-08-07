@@ -5,8 +5,8 @@
 
   angular
     .module('autoRetry')
-    .factory('$httpRetry', function () {
-      return AjaxRetry;
+    .service('$httpRetry', function () {
+      return AjaxRetry();
     });
 
 }());
