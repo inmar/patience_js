@@ -30,10 +30,6 @@
   function demoCtrl($scope, API, UIMessage) {
     var vm = this;
 
-    PubSub.subscribe('reAttemptSuccessful', function () {
-      UIMessage.show('Network is back up.');
-    });
-
     vm.makeRequest = function (times, interval) {
       console.clear();
       API.makeFailingRequest(times, interval, true).then(function (res){
@@ -64,14 +60,13 @@
         .reAttempt()
         .run()
         .then(function (res) {
-          console.log('done with request:', res);
           return res;
         })
         .catch(function (err) {
-          console.log('failed request', err);
+          UIMessage.clearAllAndShow(err);
         })
         .progress(function (msg) {
-          console.log(msg);
+          UIMessage.show(msg);
         });
 
     };
