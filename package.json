@@ -15,7 +15,8 @@
   "dependencies": {
     "axios": "^0.5.4",
     "pubsub-js": "^1.5.2",
-    "q": "^1.4.1"
+    "q": "^1.4.1",
+    "qretry": "^0.3.0"
   },
   "devDependencies": {
     "del": "^1.2.0",
