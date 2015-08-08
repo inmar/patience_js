@@ -2,8 +2,37 @@
 
   'use strict';
 
-  var blockedUrls = [];
-  var requestsBlocked = false;
+  /**
+   * Stores and manages singleton (static)
+   * data for blocked API endpoint groups
+   *
+   * @type {Object}
+   */
+  var blockedGroups = {
+    list: [],
+    add: function (groupName) {
+      if (!this.contains(groupName)) {
+        this.list.push(groupName);
+      }
+    },
+    remove: function (groupName) {
+      var groupIndex = this.list.indexOf(groupName);
+
+      if (groupIndex > -1) {
+        this.list.splice(groupIndex, 1);
+      }
+    },
+    contains: function (groupName) {
+      return (this.list.indexOf(groupName) > -1);
+    }
+  };
+
+  /**
+   * Library default options &
+   * option-related helper functions
+   *
+   * @type {Object}
+   */
   var options = {
     defaults: {
       retry: {
@@ -34,27 +63,55 @@
       }
     }
   };
+
+  /**
+   * Default library message texts
+   *
+   * @type {Object}
+   */
   var messages = {
     retryFailed: 'Request failed.',
     reAttemptsFailed: 'Re-attempts of request failed.',
     requestsBlocked: 'Requests are currently blocked by Retry library.',
   };
 
+  /**
+   * AJAX Retry library initializing function
+   */
   var AjaxRetry = function () {
 
     return {
+      _options: {},
+      _configure: function () {
+
+        // if group was not set,
+        // assume request url as group
+        if (this._options.group === 'undefined') {
+          this.setGroup(this._options.request.url);
+        }
+
+        // Qretry options key translation
+        this._options.retry.maxRetry = this._options.retry.max;
+
+        // Qretry param interpretation.
+        // Re-attempts are a total sum in this library
+        this._options.reAttempt.maxRetry = this._options.reAttempt.max - 1;
+      },
       _doRequest: function () {
-        return axios(this._requestParams);
+        return axios(this._options.request);
       },
       _doRetry: function (response) {
-        this._retryParams.maxRetry = this._retryParams.max - 1;
         var self = this;
 
         // Retry
         Qretry(function () {
-          return self._doRequest();
-        }, self._retryParams).then(function (res) {
 
+          return self._doRequest();
+
+        }, self._options.retry).then(function (res) {
+
+          // original request or retry succeeded.
+          // resolve http response
           response.resolve(res);
 
         }).catch(function () {
@@ -62,10 +119,12 @@
           PubSub.publish('retriesFailed', messages.retryFailed);
           response.notify(messages.retryFailed);
 
-          if (self._reAttemptParams) {
-            // block future async calls
-            requestsBlocked = true;
+          if (self._options.reAttempt) {
 
+            // block future async calls
+            blockedGroups.add(self._options.group);
+
+            // start re-attempt
             self._doReAttempt(response);
 
           } else {
@@ -73,60 +132,64 @@
           }
 
         });
-
       },
       _doReAttempt: function (response) {
 
-        this._reAttemptParams.maxRetry = this._reAttemptParams.max - 1;
         var self = this;
 
         // Re-attempt
         Qretry(function () {
 
-          return axios(self._requestParams);
+          return axios(self._options.request);
 
-        }, self._reAttemptParams).then(function (res) {
+        }, self._options.reAttempt).then(function (res) {
 
-          requestsBlocked = false;
+          // successful re-attempt
+          blockedGroups.remove(self._options.group);
           response.resolve(res);
 
         }).catch(function (err) {
 
-          requestsBlocked = false;
+          // all re-attempts failed.
+          blockedGroups.remove(self._options.group);
           PubSub.publish('reAttemptsFailed', messages.reAttemptsFailed);
           response.reject(messages.reAttemptsFailed);
 
         });
-
       },
       retry: function (params) {
-        this._retryParams = options.parse(params, options.defaults.retry);
+        this._options.retry = options.parse(params, options.defaults.retry);
         return this;
       },
       request: function (params) {
-        this._requestParams = params;
+        this._options.request = params;
         return this;
       },
       reAttempt: function (params) {
-        this._reAttemptParams = options.parse(params, options.defaults.reAttempt);
+        this._options.reAttempt = options.parse(params, options.defaults.reAttempt);
+        return this;
+      },
+      group: function (name) {
+        this._options.group = name;
         return this;
       },
       run: function () {
 
+        this._configure();
+
         var response = Q.defer();
 
-        if (requestsBlocked) {
+        if (blockedGroups.contains(this._options.group)) {
 
           response.reject(messages.requestsBlocked);
 
         } else {
+
           this._doRetry(response);
+
         }
 
         return response.promise;
-      },
-      getStatus: function () {
-        return requestsBlocked;
       }
     };
 

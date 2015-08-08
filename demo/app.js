@@ -56,6 +56,7 @@
 
       return $httpRetry
         .request(badRequestConfig)
+        .group('User')
         .retry()
         .reAttempt()
         .run()
