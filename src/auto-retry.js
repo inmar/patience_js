@@ -86,8 +86,8 @@
 
         // if group was not set,
         // assume request url as group
-        if (this._options.group === 'undefined') {
-          this.setGroup(this._options.request.url);
+        if (this._options.group === undefined) {
+          this.group(this._options.request.url);
         }
 
         // Qretry options key translation
