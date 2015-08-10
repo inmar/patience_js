@@ -1,10 +1,8 @@
 # Auto AJAX Retry
--------
 
 A promise-based AJAX helper library with highly customizable retry strategies.
 
 ## Install
--------
 
 ```
 npm install auto-retry --save
@@ -22,7 +20,6 @@ Add retry library and dependencies to HTML.
 ```
 
 ## Setup
--------
 
 For vanilla JS project:
 ```javascript
@@ -36,16 +33,16 @@ For Angular.js library
 ```
 
 ## Usage
--------
 
 Basic usage of retry library in an angular service.
+
 ```
- 
+
     // inject the httpRetry service anywhere you would like to use auto-retry
     angular.module('myApp').service('API', ['$httpRetry', function () {
-        
+
         this.getUser = function (userId) {
-            
+
             /**
             * Use retry functions to build and run a retry request
             **/
@@ -69,56 +66,57 @@ Basic usage of retry library in an angular service.
 ```
 
 ## Advanced
--------
 
 Build named retry strategies for requests once and reuse across an application or multiple applications.
 
 ## API
--------
 
 For Angular usage, simply replace the `` AjaxRetry().x `` with `` $httpRetry.x `` for each API example.
 
 ### AjaxRetry().request(requestParams)
-* **required**
-* Standard request parameters passed to [axios ajax helper library](https://github.com/mzabriskie/axios)
+ * **required**
+ * Standard request parameters passed to [axios ajax helper library](https://github.com/mzabriskie/axios)
 
-Example: 
+ Example: 
   ```
     AjaxRetry()
         .request({
             method: 'GET', 
             url: 'api.com/endpoint/3' });
   ```
- 
- ### AjaxRetry().group(requestParams)
-* A group to which the current request belongs.
-* If a request fails and is being retried or re-attempted, all requests for that group will be blocked until the retry/re-attempt cycle is complete
 
-Example: 
-  ```
+### AjaxRetry().group(groupName)
+ * A group to which the current request belongs.
+ * If a request fails and is being retried or re-attempted, all requests for that group will be blocked until the retry/re-attempt cycle is complete
+ * Options:
+   * **groupName** (string): name of the group to which this retry AJAX call belongs
+
+ Example: 
+ ```
     AjaxRetry()
         .request({ 
             method: 'GET', 
             url: '/users/3' })
         .group('Users');
-  ```
- 
- ### AjaxRetry().retry(retryParams)
+ ```
+
+### AjaxRetry().retry(retryParams)
+
  * Sets the retry parameters for current chained request
  * If not used or null parameters are provided, defaults are used
    * Default options: `` { max: 2, interval: 100 } ``
-     * **max**: the maximum number of times to retry the AJAX request before failing
-     * **interval**: the interval of time, in milliseconds, to wait between each retry
-   
-Examples:
-  ```
+     * **max** (int): the maximum number of times to retry the AJAX request before failing
+     * **interval** (int): the interval of time, in milliseconds, to wait between each retry
+
+ Examples:
+ ```
      // Using default retry options
      AjaxRetry()
         .request({ 
             method: 'GET', 
             url: 'api.com/endpoint/3' })
         .retry();
-    
+
     // Using custom retry options
      AjaxRetry()
         .request({ 
@@ -128,18 +126,18 @@ Examples:
             max: 10, 
             interval: 1000 });
  ```
- 
- ### AjaxRetry().reAttempt(reAttemptParams)
+
+### AjaxRetry().reAttempt(reAttemptParams)
  * Sets the re-attempt parameters for current chained request
  * If not used, re-attempts will not occur
  * If null parameters are provided, defaults are used
    * Default options: `` { max: 3, interval: 1000, intervalMultiplicator: 1 } ``
-   * **max**: the maximum number of times to re-attempt the AJAX request before failing
-   * **interval**: the interval of time, in milliseconds, to wait between each re-attempt
-   * **intervalMultiplicator**: Number to multiply the interval by upon each subsequent failure. Used for exponential or linear back-off strategies.
- 
-Examples:
-  ```
+   * **max** (int): the maximum number of times to re-attempt the AJAX request before failing
+   * **interval** (int): the interval of time, in milliseconds, to wait between each re-attempt
+   * **intervalMultiplicator** (int): Number to multiply the interval by upon each subsequent failure. Used for exponential or linear back-off strategies.
+
+ Examples:
+ ```
      // Using default re-attempt options
      AjaxRetry()
         .request({ 
@@ -147,7 +145,7 @@ Examples:
             url: 'api.com/endpoint/3' })
         .retry()
         .reAttempt();
-    
+
     // Using custom re-attempt options
      AjaxRetry()
         .request({ 
@@ -158,3 +156,51 @@ Examples:
             max: 5,
             interval: 3000 });
  ```
+
+### AjaxRetry().run()
+ * **Required**
+ * Runs the currently configured request
+ * Options: none
+
+ Example
+ ```
+ 	AjaxRetry()
+        .request({ 
+            method: 'GET', 
+            url: 'api.com/endpoint/3' })
+        .retry()
+        .reAttempt()
+        .run();
+ ```
+
+### AjaxRetry().runStrategy(strategyName)
+ * Run a pre-configured strategy
+ * Strategies can be added with the `` $addStrategy `` method
+ Example
+  ```
+ 	AjaxRetry()
+        .request({ 
+            method: 'GET', 
+            url: 'api.com/endpoint/3' })
+        .runStrategy('UserCalls');
+ ```
+
+### AjaxRetry().$addStrategy(strategyName, strategyOptions)
+ * Adds strategy to the library for re-use later
+ * You may add any combination of retry, reAttempt, group, and request parameters to a strategy
+ * Required Options:
+   * **strategyName**: (string) Name of the strategy
+   * **strategyOptions** (Object):
+     ```
+     	{
+     		group: 'profile-api-calls',
+     		retry: {
+     			max: 10,
+     			interval: 3000,
+     		},
+     		reAttempt: {
+     			max: 10,
+     			interval: 5000,
+     		}
+     	}
+     ```
