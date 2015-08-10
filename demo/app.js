@@ -32,7 +32,7 @@
 
     vm.makeRequest = function (times, interval) {
       console.clear();
-      API.makeFailingRequest(times, interval).then(function (res){
+      API.makeFailingStrategyRequest(times, interval).then(function (res){
         console.log('API response:', res);
       });
     };
@@ -55,8 +55,8 @@
       return $httpRetry
                   .request(badRequestConfig)
                   .group('User')
-                  .retry()
-                  .reAttempt()
+                  .retry({ max: 1, interval: 500 })
+                  .reAttempt({ max: 1, interval: 2000 })
                   .run()
                   .then(function (res) {
                     return res;
@@ -72,9 +72,11 @@
 
     this.makeFailingStrategyRequest = function () {
 
+      $httpRetry.$addStrategy('news', { retry: { max: 1 } });
+
       return $httpRetry
-                  .group('User')
-                  .run('')
+                  .request(badRequestConfig)
+                  .runStrategy('news') // run preset strategy.
                   .then(function (res) {
                     return res;
                   })

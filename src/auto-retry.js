@@ -64,6 +64,54 @@
     }
   };
 
+  var strategies = {
+    list: {
+      'resilient': {
+        retry: {
+          max: 5,
+          interval: 100,
+          intervalMultiplicator: 1,
+        },
+        reAttempt: {
+          max: 10,
+          interval: 1000,
+          intervalMultiplicator: 1,
+        }
+      },
+      'exponential-backoff': {
+        retry: {
+          max: 2,
+          interval: 100,
+          intervalMultiplicator: 1.5,
+        },
+        reAttempt: {
+          max: 3,
+          interval: 1000,
+          intervalMultiplicator: 1.5,
+        }
+      },
+    },
+    get: function (strategyName) {
+
+      if (this.list[strategyName] === undefined) {
+        return false;
+      } else {
+        return this.list[strategyName];
+      }
+
+    },
+    add: function (strategyName, strategyOptions) {
+
+      if (this.get(strategyName)) {
+        console.error('Retry strategy', strategyName, 'already exists.');
+        return false;
+      } else {
+        this.list[strategyName] = strategyOptions;
+      }
+
+    }
+  };
+
   /**
    * Default library message texts
    *
@@ -101,7 +149,9 @@
 
         // Qretry param interpretation.
         // Re-attempts are a total sum in this library
-        this._options.reAttempt.maxRetry = this._options.reAttempt.max - 1;
+        if (this._options.reAttempt !== undefined) {
+          this._options.reAttempt.maxRetry = this._options.reAttempt.max - 1;
+        }
       },
       _doRequest: function () {
         return axios(this._options.request);
@@ -196,6 +246,33 @@
         }
 
         return response.promise;
+      },
+      _strategyHelper: function (optionName, options) {
+        console.log(optionName, options);
+
+        if (options) {
+          this[optionName](options);
+        }
+
+      },
+      $addStrategy: function (strategyName, strategyOptions) {
+        strategies.add(strategyName, strategyOptions);
+      },
+      runStrategy: function (strategyName) {
+
+        var strategy = strategies.get(strategyName);
+        var self = this;
+
+        if (!strategy) {
+          console.error('Retry strategy', strategyName, 'not found.');
+          return false;
+        }
+
+        Object.keys(strategy).map(function (key) {
+          self._strategyHelper(key, strategy[key]);
+        });
+
+        return this.run();
       }
     };
 
