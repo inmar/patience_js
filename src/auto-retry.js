@@ -84,10 +84,16 @@
       _options: {},
       _configure: function () {
 
+        // if retry options are not present
+        if (this._options.retry === undefined) {
+          // call options setter to populate defaults
+          this.retry();
+        }
+
         // if group was not set,
-        // assume request url as group
         if (this._options.group === undefined) {
-          this.group(this._options.request.url);
+          // assume request url as group
+          this.group(this._options.request.url); 
         }
 
         // Qretry options key translation

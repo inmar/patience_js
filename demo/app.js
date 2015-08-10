@@ -32,7 +32,7 @@
 
     vm.makeRequest = function (times, interval) {
       console.clear();
-      API.makeFailingRequest(times, interval, true).then(function (res){
+      API.makeFailingRequest(times, interval).then(function (res){
         console.log('API response:', res);
       });
     };
@@ -52,23 +52,38 @@
 
     this.makeFailingRequest = function () {
 
-      var retryParams, request;
+      return $httpRetry
+                  .request(badRequestConfig)
+                  .group('User')
+                  .retry()
+                  .reAttempt()
+                  .run()
+                  .then(function (res) {
+                    return res;
+                  })
+                  .catch(function (err) {
+                    UIMessage.clearAllAndShow(err);
+                  })
+                  .progress(function (msg) {
+                    UIMessage.show(msg);
+                  });
+
+    };
+
+    this.makeFailingStrategyRequest = function () {
 
       return $httpRetry
-        .request(badRequestConfig)
-        .group('User')
-        .retry()
-        .reAttempt()
-        .run()
-        .then(function (res) {
-          return res;
-        })
-        .catch(function (err) {
-          UIMessage.clearAllAndShow(err);
-        })
-        .progress(function (msg) {
-          UIMessage.show(msg);
-        });
+                  .group('User')
+                  .run('')
+                  .then(function (res) {
+                    return res;
+                  })
+                  .catch(function (err) {
+                    UIMessage.clearAllAndShow(err);
+                  })
+                  .progress(function (msg) {
+                    UIMessage.show(msg);
+                  });
 
     };
 
