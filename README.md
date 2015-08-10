@@ -11,12 +11,13 @@ Add retry library and dependencies to HTML.
 
 ```html
       <!-- Retry module and dependencies -->
-      <script src="../node_modules/q/q.js"></script>
-      <script src="../node_modules/qretry/build/qretry.min.js"></script>
-      <script src="../node_modules/axios/dist/axios.min.js"></script>
-      <script src="../node_modules/pubsub-js/src/pubsub.js"></script>
-      <script src="../src/auto-retry.js"></script>
-      <script src="../src/auto-retry-angular.js"></script> <!-- Optional: Angular wrapper for auto-retry -->
+      <script src="node_modules/q/q.js"></script>
+      <script src="node_modules/qretry/build/qretry.min.js"></script>
+      <script src="node_modules/axios/dist/axios.min.js"></script>
+      <script src="node_modules/pubsub-js/src/pubsub.js"></script>
+      <script src="src/auto-retry.js"></script>
+      <!-- Optional: Angular Module for auto-retry library -->
+      <script src="src/auto-retry-angular.js"></script>
 ```
 
 ## Setup
