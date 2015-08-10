@@ -176,7 +176,7 @@ For Angular usage, simply replace the `` AjaxRetry().x `` with `` $httpRetry.x `
 
 ### AjaxRetry().runStrategy(strategyName)
  * Run a pre-configured strategy
- * Strategies can be added with the `` $addStrategy `` method
+ * Strategies can be added with the `` addStrategy `` method
  Example
   ```
  	AjaxRetry()
@@ -186,7 +186,7 @@ For Angular usage, simply replace the `` AjaxRetry().x `` with `` $httpRetry.x `
         .runStrategy('UserCalls');
  ```
 
-### AjaxRetry().$addStrategy(strategyName, strategyOptions)
+### AjaxRetry().addStrategy(strategyName, strategyOptions)
  * Adds strategy to the library for re-use later
  * You may add any combination of retry, reAttempt, group, and request parameters to a strategy
  * Required Options:

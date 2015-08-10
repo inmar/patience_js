@@ -255,7 +255,7 @@
         }
 
       },
-      $addStrategy: function (strategyName, strategyOptions) {
+      addStrategy: function (strategyName, strategyOptions) {
         strategies.add(strategyName, strategyOptions);
       },
       runStrategy: function (strategyName) {
