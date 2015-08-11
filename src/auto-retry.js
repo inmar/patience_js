@@ -141,7 +141,7 @@
         // if group was not set,
         if (this._options.group === undefined) {
           // assume request url as group
-          this.group(this._options.request.url); 
+          this.group(this._options.request.url);
         }
 
         // Qretry options key translation
