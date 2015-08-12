@@ -1,4 +1,9 @@
+/*jslint browser: true*/
+/*jslint newcap: true*/
+/*global axios, Qretry, PubSub, Q*/
+
 (function () {
+
 
   'use strict';
 
@@ -56,11 +61,15 @@
       return resultConfig;
     },
     parse: function (options, defaultOptions) {
+      var resultantOptions;
+
       if (!options || Object.keys(options).length === 0) {
-        return defaultOptions;
+        resultantOptions = defaultOptions;
       } else {
-        return this.override(options, defaultOptions);
+        resultantOptions = this.override(options, defaultOptions);
       }
+
+      return resultantOptions;
     }
   };
 
@@ -93,21 +102,24 @@
     },
     get: function (strategyName) {
 
+      var strategy;
+
       if (this.list[strategyName] === undefined) {
-        return false;
+        strategy = false;
       } else {
-        return this.list[strategyName];
+        strategy = this.list[strategyName];
       }
 
+      return strategy;
     },
     add: function (strategyName, strategyOptions) {
 
       if (this.get(strategyName)) {
         console.error('Retry strategy', strategyName, 'already exists.');
         return false;
-      } else {
-        this.list[strategyName] = strategyOptions;
       }
+
+      this.list[strategyName] = strategyOptions;
 
     }
   };
@@ -184,7 +196,7 @@
             self._doReAttempt(response);
 
           } else {
-            response.reject(retryFailed);
+            response.reject(messages.retryFailed);
           }
 
         });
@@ -209,7 +221,10 @@
           // all re-attempts failed.
           blockedGroups.remove(self._options.group);
           PubSub.publish('reAttemptsFailed', messages.reAttemptsFailed);
-          response.reject(messages.reAttemptsFailed);
+          response.reject({
+            message: messages.reAttemptsFailed,
+            err: err
+          });
 
         });
       },
@@ -235,7 +250,7 @@
 
         var response = Q.defer();
 
-        if (blockedGroups.contains(this._options.group)) {
+        if (blockedGroups.contaians(this._options.group)) {
 
           response.reject(messages.requestsBlocked);
 
@@ -278,16 +293,16 @@
 
   };
 
-  (function(name, obj) {
+  (function (name, obj) {
 
-      var commonJS = typeof module != 'undefined' && module.exports;
+    var commonJS = module !== undefined && module.exports;
 
-      if (commonJS) {
-          module.exports = obj;
-      }
-      else {
-          window[name] = obj;
-      }
-  })('AjaxRetry', AjaxRetry);
+    if (commonJS) {
+      module.exports = obj;
+    } else {
+      window[name] = obj;
+    }
 
-})();
+  }('AjaxRetry', AjaxRetry));
+
+}());
