@@ -1,15 +1,9 @@
 'use strict';
 
 /**
- * Proof of Concept:
- *   Auto-retry of AJAX requests in AngularJS.
- *   Details: https://inmarb2b.visualstudio.com/DefaultCollection/Portal/_backlogs#level=Backlog+items&showParents=false&_a=backlog
- *
+ * Demo App for Auto-retry library using AngularJS.
  */
 
-/**
- * Library
- */
 (function () {
 
   function UIMessage(notify) {
@@ -25,19 +19,19 @@
         this.show(message);
       }
     };
-  };
+  }
 
-  function demoCtrl($scope, API, UIMessage) {
+  function demoCtrl(API) {
     var vm = this;
 
     vm.makeRequest = function (times, interval) {
       console.clear();
-      API.makeFailingRequest(times, interval).then(function (res){
+      API.makeFailingRequest(times, interval).then(function (res) {
         console.log('API response:', res);
       });
     };
 
-  };
+  }
 
   function apiService($http, $httpRetry, UIMessage) {
     var badRequestConfig  = {
@@ -53,20 +47,20 @@
     this.makeFailingRequest = function () {
 
       return $httpRetry
-                  .request(badRequestConfig)
-                  .group('User')
-                  .retry({ max: 2, interval: 500 })
-                  .reAttempt({ max: 2, interval: 2000 })
-                  .run()
-                  .then(function (res) {
-                    return res;
-                  })
-                  .catch(function (err) {
-                    UIMessage.clearAllAndShow(err);
-                  })
-                  .progress(function (msg) {
-                    UIMessage.show(msg);
-                  });
+        .request(badRequestConfig)
+        .group('User')
+        .retry({ max: 2, interval: 500 })
+        .reAttempt({ max: 2, interval: 2000 })
+        .run()
+        .then(function (res) {
+          return res;
+        })
+        .catch(function (err) {
+          UIMessage.clearAllAndShow(err);
+        })
+        .progress(function (msg) {
+          UIMessage.show(msg);
+        });
 
     };
 
@@ -75,17 +69,17 @@
       $httpRetry.addStrategy('news', { retry: { max: 1 } });
 
       return $httpRetry
-                  .request(badRequestConfig)
-                  .runStrategy('news') // run preset strategy.
-                  .then(function (res) {
-                    return res;
-                  })
-                  .catch(function (err) {
-                    UIMessage.clearAllAndShow(err);
-                  })
-                  .progress(function (msg) {
-                    UIMessage.show(msg);
-                  });
+        .request(badRequestConfig)
+        .runStrategy('news') // run preset strategy.
+        .then(function (res) {
+          return res;
+        })
+        .catch(function (err) {
+          UIMessage.clearAllAndShow(err);
+        })
+        .progress(function (msg) {
+          UIMessage.show(msg);
+        });
 
     };
 
