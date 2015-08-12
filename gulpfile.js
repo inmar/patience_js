@@ -44,22 +44,24 @@ gulp.task('bump-major', function () {
 gulp.task('clean-dist', function () {
   del(['dist/*'], function (err, deletedFiles) {
     if (deletedFiles && deletedFiles.length > 0)
-      console.log('Files deleted:', deletedFiles.join(', '));
+      console.error('Files deleted:', deletedFiles.join(', '));
   });
 });
 
 gulp.task('minify', ['clean-dist'], function() {
   return gulp
-    .src('src/autosave.js')
+    .src(['src/auto-retry.js', 'src/auto-retry-angular.js'])
     .pipe(gulp.dest('dist/'))
-    .pipe($.rename('autosave.min.js'))
+    .pipe($.rename({
+      suffix: '.min'
+    }))
     .pipe($.uglify())
     .pipe(gulp.dest('dist/'));
 });
 
 gulp.task('build', ['minify'], function() {
   return gulp
-    .src('src/auto-retry.js')
+    .src(['src/auto-retry.js', 'src/auto-retry-angular.js'])
     .pipe(gulp.dest('dist/'));
 });
 
