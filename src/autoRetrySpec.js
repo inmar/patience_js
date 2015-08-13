@@ -36,7 +36,7 @@ describe('--', function(){
             requestParams = {};
             customRetryParams   = {
                 max: 15,
-                interval: -5,
+                interval: 500,
             };
 
             spyOn(window, 'Qretry').and.callThrough();
@@ -55,7 +55,6 @@ describe('--', function(){
                 .reAttempt();
 
             spyOn(firstRetry, '_doRequest').and.callFake(function () {
-                console.log('sadgsaga');
             });
 
             firstRetry.run();
@@ -72,7 +71,7 @@ describe('--', function(){
                 max: 2,
                 interval: 100,
                 intervalMultiplicator: 1,
-                maxRetry: 1,
+                maxRetry: 2,
             };
 
             expect(args[1]).toEqual(defaults);
@@ -85,7 +84,7 @@ describe('--', function(){
                 max: customRetryParams.max,
                 interval: customRetryParams.interval,
                 intervalMultiplicator: 1,
-                maxRetry: customRetryParams.max - 1
+                maxRetry: customRetryParams.max
             };
 
             expect(args[1]).toEqual(expectedArgs);
@@ -124,15 +123,16 @@ describe('--', function(){
 
             var reattemptParams = {
                 max: 100,
-                interval: '845348'
+                interval: 845348
             };
 
             var customRetryCall = ajaxRetry
-                                .request()
+                                .request({ url: '', method: ''})
                                 .retry()
                                 .reAttempt(reattemptParams);
 
-            customRetryCall._doReAttempt();
+            customRetryCall._configure();
+            customRetryCall._doReAttempt({});
 
             var args = Qretry.calls.argsFor(0);
             var expected = {
