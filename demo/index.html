@@ -32,17 +32,17 @@
       <script src="app.js"></script>
     </head>
 
-  <body ng-controller="demoCtrl as ctrl">
+  <body ng-controller="demoCtrl as ctrl" class="container">
 
     <notifications-bar class="notifications"></notifications-bar>
 
     <button
       ng-click="ctrl.clearConsole()"
-      class="btn btn-sm btn-info pull-left">
+      class="btn btn-sm btn-info pull-right">
       Clear Console
     </button>
 
-    <h1 class="page-header">Auto AJAX Retry</h1>
+    <h1 class="page-header text-center">Auto Retry</h1>
 
     <div class="panel panel-default">
       <div class="panel-heading lead">Basic Usage</div>
@@ -58,7 +58,7 @@
 <pre>
 <code class="language-javascript">
 // Default Retry Options:
-{{ ctrl.retryOptions.defaults | json }}
+{{ { max: 2, interval: 500 } | json }}
 
 // Sample Angular.js code for this request
 {{ ctrl.demoRequests.basic.toString() | parseFunctionBody | removeTabs }}
@@ -110,11 +110,8 @@
 
 <pre>
 <code class="language-javascript">
-// Default rertry configuration:
-{{ ctrl.retryOptions.defaults | json }}
-
 // Default re-attempt configuration:
-{{ ctrl.reAttemptOptions.defaults | json }}
+{{ { max: 2, interval: 1000, intervalMultiplicator: 1 } | json }}
 
 // Sample Angular.js code for this request
 {{ ctrl.demoRequests.retryAndReAttempt.toString() | parseFunctionBody | removeTabs }}
@@ -163,7 +160,7 @@
         </p>
         <p>
           You can start by adding a strategy with <code>.addStrategy(strategyName, options)</code> method call.
-          Adding strategies can be especially powerful if you configure them in the beginning of your application.
+          Adding strategies can be especially powerful if you use them as an independent abstraction which your application leverages.
         </p>
         <p>
           You can reuse these strategies by using the

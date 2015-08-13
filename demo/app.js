@@ -64,10 +64,12 @@
           .retry()
           .run()
           .then(function (res) {
-            // do something with the API response in res.data
+            // do something with the API response
           })
           .catch(function (err) {
-            // handle error
+            // retry library provides { message: [String explaining error type], error: [AJAX Error Object] }
+
+            // for demo purposes, we will show a UI message
             UIMessage.clearAllAndShow(err.message);
           });
         },
@@ -80,9 +82,12 @@
           })
           .run()
           .then(function (res) {
-            return res.data;
+            // do something with the API response
           })
           .catch(function (err) {
+            // retry library provides { message: [String explaining error type], error: [AJAX Error Object] }
+
+            // for demo purposes, we will show a UI message
             UIMessage.clearAllAndShow(err.message);
           });
       },
@@ -93,12 +98,18 @@
           .reAttempt()
           .run()
           .then(function (res) {
-            return res.data;
+            // do something with the API response
           })
           .catch(function (err) {
+            // retry library provides { message: [String explaining error type], error: [AJAX Error Object] }
+
+            // for demo purposes, we will show a UI message
             UIMessage.clearAllAndShow(err.message);
           })
           .progress(function (msg) {
+            // retry library provides { message: [ String explaining update], error: [AJAX Error Object] }
+
+            // for demo purposes, we will show a UI message
             UIMessage.show(msg.message);
           });
       },
@@ -115,12 +126,18 @@
           })
           .run()
           .then(function (res) {
-            return res.data;
+            // do something with the API response
           })
           .catch(function (err) {
+            // retry library provides { message: [String explaining error type], error: [AJAX Error Object] }
+
+            // for demo purposes, we will show a UI message
             UIMessage.clearAllAndShow(err.message);
           })
           .progress(function (msg) {
+            // retry library provides { message: [ String explaining update], error: [AJAX Error Object] }
+
+            // for demo purposes, we will show a UI message
             UIMessage.show(msg.message);
           });
       },
@@ -129,12 +146,18 @@
           .request(requestConfig)
           .runStrategy('test-strategy')
           .then(function (res) {
-            return res.data;
+            // do something with the API response
           })
           .catch(function (err) {
+            // retry library provides { message: [String explaining error type], error: [AJAX Error Object] }
+
+            // for demo purposes, we will show a UI message
             UIMessage.clearAllAndShow(err.message);
           })
           .progress(function (msg) {
+            // retry library provides { message: [ String explaining update], error: [AJAX Error Object] }
+
+            // for demo purposes, we will show a UI message
             UIMessage.show(msg.message);
           });
       }
