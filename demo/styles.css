@@ -1,11 +1,14 @@
 body {
 	margin: 10%;
 	margin-top: 5%;
-	text-align: center;
 }
 
 hr {
 	margin-top: 5%;
 	margin-bottom: 5%;
 	border: solid 1px #eee;
+}
+
+.panel {
+  margin-bottom: 50px;
 }

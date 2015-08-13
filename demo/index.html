@@ -6,12 +6,12 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
       <link href="http://fonts.googleapis.com/css?family=Open+Sans:300,400,600" rel="stylesheet" type="text/css">
-      <title>POC: Auto-retry</title>
+      <title>Auto-retry</title>
 
       <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
 
       <!-- Angular -->
-      <script src="../bower_components/angular/angular.min.js"></script>
+      <script src="bower_components/angular/angular.min.js"></script>
 
       <!-- Retry module and dependencies -->
       <script src="../node_modules/q/q.js"></script>
@@ -22,11 +22,13 @@
       <script src="../src/auto-retry-angular.js"></script>
 
       <!-- Demo app -->
-      <link href="../bower_components/animate.css/animate.min.css" rel="stylesheet">
-      <link href="../bower_components/angular-notify/dist/angular-notify.min.css" rel="stylesheet">
+      <link href="bower_components/animate.css/animate.min.css" rel="stylesheet">
+      <link href="bower_components/angular-notify/dist/angular-notify.min.css" rel="stylesheet">
+      <link href="bower_components/prism/themes/prism-okaidia.css" rel="stylesheet">
       <link href="styles.css" rel="stylesheet">
 
-      <script src="../bower_components/angular-notify/dist/angular-notify.min.js"></script>
+      <script src="bower_components/prism/prism.js"></script>
+      <script src="bower_components/angular-notify/dist/angular-notify.min.js"></script>
       <script src="app.js"></script>
     </head>
 
@@ -34,25 +36,158 @@
 
     <notifications-bar class="notifications"></notifications-bar>
 
-    <h2>Test 1</h2>
-    <p>Make a request using retry service using default configs.</p>
-    <p>
-      <strong>Configuration:</strong> None / Default. 
-    </p>
-    <button ng-click="ctrl.makeRequest()">Make HTTP Request</button>
+    <button
+      ng-click="ctrl.clearConsole()"
+      class="btn btn-sm btn-info pull-left">
+      Clear Console
+    </button>
 
-    <hr/>
-    <h2>Test 2</h2>
-    <p>
-      <strong>Configuration:</strong> Retry failed requests 5 times @ 5000ms interval. 
-    </p>
-    <button ng-click="ctrl.makeRequest(5, 5000)">Make HTTP Request</button>
+    <h1 class="page-header">Auto AJAX Retry</h1>
 
-    <hr/>
-    <p>
-      <strong>Configuration:</strong> Retry failed requests 10 times @ 7000ms interval. 
-    </p>
-    <button ng-click="ctrl.makeRequest(10, 7000)">Make HTTP Request</button>
+    <div class="panel panel-default">
+      <div class="panel-heading lead">Basic Usage</div>
+      <div class="panel-body">
+        <p>Make a request using retry library.</p>
+        <p>Note: Re-attempts are not enabled unless explicitly called by your application.</p>
+
+        <button
+          class="btn btn-sm btn-success"
+          ng-click="ctrl.demoRequests.basic()">
+          Make Request
+        </button>
+<pre>
+<code class="language-javascript">
+// Default Retry Options:
+{{ ctrl.retryOptions.defaults | json }}
+
+// Sample Angular.js code for this request
+{{ ctrl.demoRequests.basic.toString() | parseFunctionBody | removeTabs }}
+</code>
+</pre>
+
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading lead">Custom Retry Options</div>
+      <div class="panel-body">
+        <p>Make a request using retry library with custom options.</p>
+
+        <button
+          class="btn btn-sm btn-success"
+          ng-click="ctrl.demoRequests.customRetry()">
+          Make Request
+        </button>
+
+<pre>
+<code class="language-javascript">
+// Sample Angular.js code for this request
+{{ ctrl.demoRequests.customRetry.toString() | parseFunctionBody | removeTabs }}
+</code>
+</pre>
+
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading lead">Retry & Re-attempt</div>
+      <div class="panel-body">
+        <p>
+          A Re-attempt is a secondary abstraction available via the retry library.
+          It allows you to be notified when the retries fail (via the promise update/progress method)
+          while the library starts to re-attempt the request at the provided re-attempt interval.
+        </p>
+        <p>
+          A re-attempt also allows for an optional <code>intervalMultiplicator</code> option.
+          If provided,is an integer by which the <code>interval</code> will be increased after each re-attempt.
+        </p>
+
+        <button
+          class="btn btn-sm btn-success"
+          ng-click="ctrl.demoRequests.retryAndReAttempt()">
+          Make Request
+        </button>
+
+<pre>
+<code class="language-javascript">
+// Default rertry configuration:
+{{ ctrl.retryOptions.defaults | json }}
+
+// Default re-attempt configuration:
+{{ ctrl.reAttemptOptions.defaults | json }}
+
+// Sample Angular.js code for this request
+{{ ctrl.demoRequests.retryAndReAttempt.toString() | parseFunctionBody | removeTabs }}
+</code>
+</pre>
+
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading lead">Custom Retry & Re-attempt Options</div>
+      <div class="panel-body">
+        <p>
+          This request will be made using custom retry and custom re-attempt options.
+        </p>
+
+        <p>Custom Retry Options: <code></code></p>
+        <p>Custom Re-attempt Options: <code>{{ ctrl.reAttemptOptions.custom | json }}</code></p>
+
+        <button
+          class="btn btn-sm btn-success"
+          ng-click="ctrl.demoRequests.customRetryAndReAttempt()">
+          Make Request
+        </button>
+
+<pre>
+<code class="language-javascript">
+// Sample Angular.js code for this request
+{{ ctrl.demoRequests.customRetryAndReAttempt.toString() | parseFunctionBody | removeTabs }}
+</code>
+</pre>
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading lead">Strategies</div>
+      <div class="panel-body">
+        <p>
+          The explicit syntax of the retry library API can feel repetitive if you are using the same type of API calls in several places in your app.
+          For this case, the <code>.addStrategy(strategyName, options)</code> and
+          <code>.runStrategy(strategyName)</code> methods are available.
+        </p>
+        <p>
+          As outlined in the README.md documentation, strategies allow you to add preset options for:
+          requests, group, retry, and re-attempt.
+        </p>
+        <p>
+          You can start by adding a strategy with <code>.addStrategy(strategyName, options)</code> method call.
+          Adding strategies can be especially powerful if you configure them in the beginning of your application.
+        </p>
+        <p>
+          You can reuse these strategies by using the
+          <code>.runStrategy(strategyName)</code> rather than the default <code>.run()</code>
+          method to initiate your AJAX call.
+        </p>
+
+        <button
+          class="btn btn-sm btn-success"
+          ng-click="ctrl.demoRequests.customStrategy()">
+          Make Request
+        </button>
+
+<pre>
+<code class="language-javascript">
+// Add a strategy
+{{ ctrl.addStrategy.toString() | parseFunctionBody | removeTabs }}
+
+// Call the strategy which will configure your call automatically per the presets
+{{ ctrl.demoRequests.customStrategy.toString() | parseFunctionBody | removeTabs }}
+</code>
+</pre>
+      </div>
+    </div>
 
   </body>
 

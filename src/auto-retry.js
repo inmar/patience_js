@@ -182,12 +182,16 @@
           // resolve http response
           response.resolve(res);
 
-        }).catch(function () {
+        }).catch(function (err) {
 
           PubSub.publish('retriesFailed', messages.retryFailed);
-          response.notify(messages.retryFailed);
 
           if (self._options.reAttempt) {
+
+            response.notify({
+              message: messages.retryFailed,
+              error: err
+            });
 
             // block future async calls
             blockedGroups.add(self._options.group);
@@ -196,7 +200,12 @@
             self._doReAttempt(response);
 
           } else {
-            response.reject(messages.retryFailed);
+
+            response.reject({
+              message: messages.retryFailed,
+              error: err,
+            });
+
           }
 
         });
@@ -250,9 +259,9 @@
 
         var response = Q.defer();
 
-        if (blockedGroups.contaians(this._options.group)) {
+        if (blockedGroups.contains(this._options.group)) {
 
-          response.reject(messages.requestsBlocked);
+          response.reject({ message: messages.requestsBlocked });
 
         } else {
 
@@ -263,8 +272,6 @@
         return response.promise;
       },
       _strategyHelper: function (optionName, options) {
-        console.log(optionName, options);
-
         if (options) {
           this[optionName](options);
         }
@@ -295,7 +302,7 @@
 
   (function (name, obj) {
 
-    var commonJS = module !== undefined && module.exports;
+    var commonJS = !(window['module'] === undefined) && window['module'].exports;
 
     if (commonJS) {
       module.exports = obj;

@@ -1,6 +1,6 @@
 {
   "name": "ajax-retry",
-  "version": "0.0.1",
+  "version": "0.9.0",
   "description": "AJAX helper library which uses promises to silently retry requests before failing.",
   "main": "app.js",
   "scripts": {
