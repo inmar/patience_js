@@ -15,7 +15,7 @@ describe('--', function(){
         url: 'http://localhost:8080'
     };
 
-    describe('Initial Call', function(){
+    describe('All Requests', function(){
 
         it('should return a promise', function(){
             var ajaxRetryPromise = ajaxRetry
@@ -26,6 +26,45 @@ describe('--', function(){
 
             expect(ajaxRetryPromise).not.toBeNull();
         });
+    });
+
+    describe('Group Feature', function(){
+
+        it('should set group options', function(){
+            var group = 'testing2321';
+
+            var groupCall = ajaxRetry
+                              .request(requestParams)
+                              .retry()
+                              .group(group);
+
+            expect(groupCall._options.group).toEqual(group);
+        });
+
+        it('should return object reference (this)', function(){
+            var retryCallResult = ajaxRetry.request(requestParams).group();
+            expect(retryCallResult).toEqual(jasmine.any(Object));
+        });
+
+    });
+
+    describe('Request Feature', function(){
+
+        it('should set request options', function(){
+            var requestParams = { method: '32r', url: '/fdsgs/' };
+
+            var requestCall = ajaxRetry
+                                .request(requestParams)
+                                .retry();
+
+            expect(requestCall._options.request).toEqual(requestParams);
+        });
+
+        it('should return object reference (this)', function(){
+            var retryCallResult = ajaxRetry.request(requestParams);
+            expect(retryCallResult).toEqual(jasmine.any(Object));
+        });
+
     });
 
     describe('Retry Functionality', function(){
@@ -89,6 +128,11 @@ describe('--', function(){
 
             expect(args[1]).toEqual(expectedArgs);
         });
+
+        it('should return object reference (this)', function(){
+            var retryCallResult = ajaxRetry.request(requestParams).retry();
+            expect(retryCallResult).toEqual(jasmine.any(Object));
+        });
     });
 
     describe('Re-attempt Functionality', function () {
@@ -147,4 +191,42 @@ describe('--', function(){
 
     });
 
+    describe('Strategy Functionality', function () {
+
+      var strategyCall;
+      beforeEach(function () {
+
+        ajaxRetry.addStrategy('test-strategy', { request: { max: 100 } });
+        strategyCall = ajaxRetry.group('32532l');
+      });
+
+      it('should allow setting of a strategy', function () {
+
+        strategyCall.runStrategy('test-strategy');
+
+        expect(strategyCall._options.request.max).toEqual(100);
+
+      });
+
+      it('should print error message when unknown strategy is called', function () {
+
+        spyOn(console, 'error').and.callThrough();
+
+        strategyCall.runStrategy('test');
+
+        expect(console.error.calls.any()).toEqual(true);
+
+      });
+
+      it('should call run if successful', function () {
+
+        spyOn(strategyCall, 'run').and.callThrough();
+
+        strategyCall.runStrategy('test-strategy');
+
+        expect(strategyCall.run.calls.any()).toEqual(true);
+
+      });
+
+    });
 });
