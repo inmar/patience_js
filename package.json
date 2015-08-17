@@ -4,7 +4,7 @@
   "description": "AJAX helper library which uses promises to silently retry requests before failing.",
   "main": "src/auto-retry.js",
   "scripts": {
-    "test": "karma start karma.conf.js"
+    "test": "gulp test"
   },
   "repository": {
     "type": "git",
