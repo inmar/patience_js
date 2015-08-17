@@ -44,7 +44,7 @@ gulp.task('bump-major', function () {
 gulp.task('clean-dist', function () {
   del(['dist/*'], function (err, deletedFiles) {
     if (deletedFiles && deletedFiles.length > 0)
-      console.error('Files deleted:', deletedFiles.join(', '));
+      console.error('\n Files deleted: \n', deletedFiles.join(',\n '));
   });
 });
 
