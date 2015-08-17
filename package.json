@@ -1,8 +1,8 @@
 {
-  "name": "ajax-retry",
+  "name": "auto-retry",
   "version": "0.9.0",
   "description": "AJAX helper library which uses promises to silently retry requests before failing.",
-  "main": "app.js",
+  "main": "src/auto-retry.js",
   "scripts": {
     "test": "karma start karma.conf.js"
   },
