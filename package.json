@@ -1,6 +1,6 @@
 {
   "name": "auto-retry",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "A small (3kb minified) promise-based AJAX helper library which allows retry configuration and strategy-based request building. AngularJS supported.",
   "main": "dist/auto-retry.min.js",
   "scripts": {
