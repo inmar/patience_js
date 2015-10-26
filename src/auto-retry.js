@@ -115,7 +115,6 @@
     add: function (strategyName, strategyOptions) {
 
       if (this.get(strategyName)) {
-        console.error('Retry strategy', strategyName, 'already exists.');
         return false;
       }
 
