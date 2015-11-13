@@ -1,5 +1,9 @@
 var gulp = require('gulp');
 var del = require('del');
+var browserify = require('browserify');
+var source = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
+var runSequence = require('run-sequence');
 var $ = require('gulp-load-plugins')({lazy: true});
 
 gulp.task('help', $.taskListing);
@@ -50,7 +54,7 @@ gulp.task('clean-dist', function () {
 
 gulp.task('minify', ['clean-dist'], function() {
   return gulp
-    .src(['src/auto-retry.js', 'src/auto-retry-angular.js'])
+    .src(['src/auto-retry-angular.js'])
     .pipe(gulp.dest('dist/'))
     .pipe($.rename({
       suffix: '.min'
@@ -61,8 +65,43 @@ gulp.task('minify', ['clean-dist'], function() {
 
 gulp.task('build', ['minify'], function() {
   return gulp
-    .src(['src/auto-retry.js', 'src/auto-retry-angular.js'])
+    .src(['src/auto-retry-angular.js'])
     .pipe(gulp.dest('dist/'));
 });
 
+gulp.task('build-new', function() {
+  runSequence('clean-dist','browserify','browserify-minify','copy-angular')
+});
+
+gulp.task('browserify', function() {
+  var b = browserify({
+    entries: 'index.js',
+    debug: true
+  });
+  return b.bundle()
+    .pipe(source('auto-retry.js'))
+    .pipe(gulp.dest('dist/'));
+});
+
+gulp.task('browserify-minify', function() {
+  return gulp
+    .src(['dist/auto-retry.js'])
+    .pipe(gulp.dest('dist/'))
+    .pipe($.rename({
+      suffix: '.min'
+    }))
+    .pipe($.uglify())
+    .pipe(gulp.dest('dist/'));
+});
+
+gulp.task('copy-angular', function() {
+  return gulp
+    .src(['src/auto-retry-angular.js'])
+    .pipe(gulp.dest('dist/'))
+    .pipe($.rename({
+      suffix: '.min'
+    }))
+    .pipe($.uglify())
+    .pipe(gulp.dest('dist/'));
+});
 
