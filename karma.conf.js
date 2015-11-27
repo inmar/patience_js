@@ -5,20 +5,18 @@ module.exports = function(config){
 
         files : [
             'node_modules/sinon/pkg/sinon.js',
-            'node_modules/q/q.js',
-            'node_modules/qretry/build/qretry.min.js',
             'node_modules/jasmine-ajax/lib/mock-ajax.js',
-            'src/auto-retry.js',
             'src/autoRetrySpec.js'
         ],
 
         autoWatch : false,
 
-        frameworks: ['jasmine'],
+        frameworks: ['jasmine','browserify'],
 
         browsers : ['Chrome'],
 
         plugins : [
+            'karma-browserify',
             'karma-jasmine',
             'karma-junit-reporter',
             'karma-chrome-launcher',
@@ -26,6 +24,7 @@ module.exports = function(config){
         ],
 
         preprocessors: {
+            'src/*.js': ['browserify'],
             'src/auto-retry.js': ['coverage']
         },
 

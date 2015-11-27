@@ -3,6 +3,7 @@
 
 'use strict';
 
+
 var axios = require('axios');
 var Qretry = require('Qretry');
 var PubSub = require('pubsub-js');
@@ -298,13 +299,18 @@ var AjaxRetry = function () {
     }
   };
 
+  console.log("==================================================================================");
+
+
 };
+
 
 (function (name, obj) {
 
   var commonJS = !(window['module'] === undefined) && window['module'].exports;
 
   if (commonJS) {
+    console.log('exports');
     module.exports = obj;
   } else {
     window[name] = obj;
