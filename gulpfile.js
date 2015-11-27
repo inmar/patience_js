@@ -52,27 +52,6 @@ gulp.task('clean-dist', function () {
   });
 });
 
-gulp.task('minify', ['clean-dist'], function() {
-  return gulp
-    .src(['src/auto-retry-angular.js'])
-    .pipe(gulp.dest('dist/'))
-    .pipe($.rename({
-      suffix: '.min'
-    }))
-    .pipe($.uglify())
-    .pipe(gulp.dest('dist/'));
-});
-
-gulp.task('build', ['minify'], function() {
-  return gulp
-    .src(['src/auto-retry-angular.js'])
-    .pipe(gulp.dest('dist/'));
-});
-
-gulp.task('build-new', function() {
-  runSequence('clean-dist','browserify','browserify-minify','copy-angular')
-});
-
 gulp.task('browserify', function() {
   var b = browserify({
     entries: 'index.js',
@@ -83,9 +62,15 @@ gulp.task('browserify', function() {
     .pipe(gulp.dest('dist/'));
 });
 
-gulp.task('browserify-minify', function() {
+gulp.task('copy-angular', function() {
   return gulp
-    .src(['dist/auto-retry.js'])
+    .src(['src/auto-retry-angular.js'])
+    .pipe(gulp.dest('dist/'));
+});
+
+gulp.task('minify', function() {
+  return gulp
+    .src(['dist/auto-retry.js','dist/auto-retry-angular.js'])
     .pipe(gulp.dest('dist/'))
     .pipe($.rename({
       suffix: '.min'
@@ -94,14 +79,7 @@ gulp.task('browserify-minify', function() {
     .pipe(gulp.dest('dist/'));
 });
 
-gulp.task('copy-angular', function() {
-  return gulp
-    .src(['src/auto-retry-angular.js'])
-    .pipe(gulp.dest('dist/'))
-    .pipe($.rename({
-      suffix: '.min'
-    }))
-    .pipe($.uglify())
-    .pipe(gulp.dest('dist/'));
+gulp.task('build', function() {
+  runSequence('clean-dist','browserify','copy-angular','minify')
 });
 
