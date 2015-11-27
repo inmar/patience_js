@@ -4,9 +4,9 @@
 'use strict';
 
 var axios = require('axios');
-var Qretry = require('Qretry');
+var Qretry = require('qretry');
 var PubSub = require('pubsub-js');
-var Q = require('Q');
+var Q = require('q');
 
 /**
  * Stores and manages singleton (static)
@@ -303,13 +303,23 @@ var AjaxRetry = function () {
 
 (function (name, obj) {
 
-  //var commonJS = !(window['module'] === undefined) && window['module'].exports;
   var commonJS = typeof module != 'undefined' && module.exports;
 
   if (commonJS) {
     module.exports = obj;
   } else {
     window[name] = obj;
+  }
+
+  if (angular) {
+
+    angular.module('autoRetry', []);
+
+    angular
+      .module('autoRetry')
+      .service('$httpRetry', function () {
+        return AjaxRetry();
+      });
   }
 
 }('AjaxRetry', AjaxRetry));

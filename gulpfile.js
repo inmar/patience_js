@@ -62,15 +62,10 @@ gulp.task('browserify', function() {
     .pipe(gulp.dest('dist/'));
 });
 
-gulp.task('copy-angular', function() {
-  return gulp
-    .src(['src/auto-retry-angular.js'])
-    .pipe(gulp.dest('dist/'));
-});
 
 gulp.task('minify', function() {
   return gulp
-    .src(['dist/auto-retry.js','dist/auto-retry-angular.js'])
+    .src(['dist/auto-retry.js'])
     .pipe(gulp.dest('dist/'))
     .pipe($.rename({
       suffix: '.min'
@@ -80,6 +75,6 @@ gulp.task('minify', function() {
 });
 
 gulp.task('build', function() {
-  runSequence('clean-dist','browserify','copy-angular','minify')
+  runSequence('clean-dist','browserify','minify')
 });
 
