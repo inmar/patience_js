@@ -311,7 +311,7 @@ var AjaxRetry = function () {
     window[name] = obj;
   }
 
-  if (angular) {
+  if (window.angular) {
 
     angular.module('autoRetry', []);
 
