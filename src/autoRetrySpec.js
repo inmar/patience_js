@@ -1,15 +1,10 @@
-
-var ajaxRetry = require('./auto-retry.js');
-
 describe('--', function(){
 
-    //var ajaxRetry;
+    var ajaxRetry;
 
-    //beforeEach(function(){
-    //   ajaxRetry = AjaxRetry();
-    //});
-
-    console.log(ajaxRetry);
+    beforeEach(function(){
+       ajaxRetry = require('./auto-retry.js')();
+    });
 
     it('should be present', function(){
         expect(ajaxRetry).not.toBeNull();
