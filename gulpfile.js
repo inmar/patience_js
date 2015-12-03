@@ -1,10 +1,10 @@
-var gulp = require('gulp');
-var del = require('del');
-var browserify = require('browserify');
-var source = require('vinyl-source-stream');
-var buffer = require('vinyl-buffer');
+var gulp        = require('gulp');
+var del         = require('del');
+var browserify  = require('browserify');
+var source      = require('vinyl-source-stream');
+var buffer      = require('vinyl-buffer');
 var runSequence = require('run-sequence');
-var $ = require('gulp-load-plugins')({lazy: true});
+var $           = require('gulp-load-plugins')({lazy: true});
 
 gulp.task('help', $.taskListing);
 
@@ -19,8 +19,8 @@ gulp.task('test', function () {
             'node_modules/q/q.js',
             'node_modules/qretry/build/qretry.min.js',
             'node_modules/jasmine-ajax/lib/mock-ajax.js',
-            'src/patience-js.js',
-            'src/patience-js.spec.js'])
+            'src/patience.js',
+            'src/patience.spec.js'])
     .pipe($.karma({
       configFile: 'karma.conf.js',
       action: 'run'
@@ -58,14 +58,14 @@ gulp.task('browserify', function() {
     debug: true
   });
   return b.bundle()
-    .pipe(source('patience-js.js'))
+    .pipe(source('patience.js'))
     .pipe(gulp.dest('dist/'));
 });
 
 
 gulp.task('minify', function() {
   return gulp
-    .src(['dist/patience-js.js'])
+    .src(['dist/patience.js'])
     .pipe(gulp.dest('dist/'))
     .pipe($.rename({
       suffix: '.min'

@@ -1,5 +1,5 @@
 {
-  "name": "auto-retry",
+  "name": "patience-js",
   "version": "0.1.0",
   "description": "A promise-based AJAX helper library which allows retry configuration and strategy-based request building. AngularJS supported.",
   "main": "./index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://inmarb2b.visualstudio.com/DefaultCollection/Portal/_git/auto-retry"
+    "url": "https://github.com/InmarOSS/patience-js"
   },
   "author": "afaq.tariq@inmar.com",
   "license": "MIT",

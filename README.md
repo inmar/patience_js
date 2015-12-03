@@ -24,7 +24,7 @@ Add retry library to your project:
 
 ```html
 <!-- PatienceJS-->
-<script src="node_modules/patience-js/dist/patience-js.min.js"></script>
+<script src="node_modules/patience-js/dist/patience.min.js"></script>
 ```
 
 ## Usage

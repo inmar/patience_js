@@ -1,2 +1,2 @@
 // for browserify bundle
-module.exports = require('./src/auto-retry.js');
+module.exports = require('./src/patience-js.js');
