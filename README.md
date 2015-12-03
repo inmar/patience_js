@@ -7,9 +7,9 @@
 
 <h5 align="center">
   <a href="#">Demo</a> &nbsp;|&nbsp; 
-  <a href="#setup">Installation</a> &nbsp;|&nbsp; 
+  <a href="#installation">Installation</a> &nbsp;|&nbsp; 
   <a href="#usage">Usage</a> &nbsp;|&nbsp;
-  <a href="#setup">API</a>  
+  <a href="#api">API</a>  
 </h5>
 
 ## Installation
