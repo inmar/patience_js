@@ -14,7 +14,7 @@
 
 ## Installation
 
-Download via [npm]() or [bower]().
+Download via [npm](https://www.npmjs.com/package/patience-js).
 
 ```sh
 $ npm install patience-js --save
