@@ -1,107 +1,156 @@
-# Auto AJAX Retry
+<br/>
+<h1 align="center">AJAX Retry</h1>
 
-A promise-based AJAX helper library with highly customizable retry strategies.
+<h6 align="center">
+  A promise-based AJAX library with retry strategies.
+</h6>
 
-## Install
+<h5 align="center">
+  <a href="#overview">Overview</a> &nbsp;|&nbsp; 
+  <a href="#setup">Installation</a> &nbsp;|&nbsp; 
+  <a href="#usage">Usage</a> &nbsp;|&nbsp;
+  <a href="#setup">API</a>  
+</h5>
 
+## Overview 
+
+<h4> <u> Promise-based </u></h4>
+
+**AJAX Retry** uses the [**Qretry**](https://github.com/kriskowal/q) library to leverage the power of promises. 
+
+All **AJAX Retry** calls return [Q promises](https://github.com/kriskowal/q) for convenience.
+
+<h4> <u> Retry Strategies </u></h4>
+
+The main objective of this library is to provide highly customizable ways to retry failed AJAX calls (promises).
+
+If an AJAX call made via AJAX Retry fails, it will be autmatically retried upto two more times before the promise is rejected.
+
+<h4> <u> Complex Retry Strategies </u></h4>
+
+AJAX Retry allows you to get fancy with your retry strategies.
+
+The AJAX Retry library supports exponential backoffs, logical grouping, re-attempt cycles, and custom strategies. 
+
+<h4> <u> PubSub </u></h4>
+
+AJAX Retry uses the [PubSubJS](https://github.com/mroderick/PubSubJS) library to register events. 
+
+You can listen to these events in your app to show appropriate UI messaging or execute alternate routines.
+
+<h4> <u>AngularJS </u> </h4>
+
+AngularJS is supported by default. No need to install a separate library. 
+
+Simply inject the `autoRetry` module into your app and you will have access to the '$httpRetry' service. This service can be injected anywhere you would like to make use AJAX Retry.
+
+
+## Installation
+
+Download via [npm]() or [bower]().
+
+```sh
+$ npm install auto-retry --save
 ```
-npm install auto-retry --save
-```
+
 Add retry library and dependencies to HTML.
 
 ```html
-      <!-- Retry module and dependencies -->
-      <script src="node_modules/q/q.js"></script>
-      <script src="node_modules/qretry/build/qretry.min.js"></script>
-      <script src="node_modules/axios/dist/axios.min.js"></script>
-      <script src="node_modules/pubsub-js/src/pubsub.js"></script>
-      <script src="src/auto-retry.js"></script>
-      <!-- Optional: Angular Module for auto-retry library -->
-      <script src="src/auto-retry-angular.js"></script>
-```
-
-## Setup
-
-For vanilla JS project:
-```javascript
-    var retryCall = AjaxRetry();
-```
-
-For Angular.js library
-```javascript
-    // inject auto-retry module into your app
-    angular.module('myApp', ['autoRetry']);
+<!-- AJAX Retry library-->
+<script src="node_modules/auto-retry/dist/auto-retry.min.js"></script>
 ```
 
 ## Usage
 
+For vanilla JS project:
+```javascript
+var retryCall = AjaxRetry();
+```
+
+For Angular.js library
+```javascript
+// inject auto-retry module into your app
+angular.module('myApp', ['autoRetry']);
+```
+
 Basic usage of retry library in an angular service.
 
+```js
+// inject the $httpRetry service anywhere you would like to use auto-retry
+angular.module('myApp').service('API', ['$httpRetry', function () {
+
+  this.getUser = function (userId) {
+
+      // Use retry functions to build and run a retry request
+      return $httpRetry
+              
+              // ajax request params
+              .request({ url: 'api.com/users/' + userId, method: 'GET' })
+              
+              // logical grouping
+              .group('User')
+
+              // retry
+              .retry({ max: 1, interval: 500 })
+              
+              .reAttempt({ max: 1, interval: 2000 })
+              
+              .run() // returns a promise
+              
+              .then(function (res) {
+                return res;
+              })
+              
+              .catch(function (err) {
+                //
+              })
+              
+              .progress(function (msg) {
+                // 
+              });
+  };
+}]);
 ```
-
-    // inject the httpRetry service anywhere you would like to use auto-retry
-    angular.module('myApp').service('API', ['$httpRetry', function () {
-
-        this.getUser = function (userId) {
-
-            /**
-            * Use retry functions to build and run a retry request
-            **/
-            return $httpRetry
-                          .request({ url: 'api.com/users/' + userId, method: 'GET' })
-                          .group('User')
-                          .retry({ max: 1, interval: 500 })
-                          .reAttempt({ max: 1, interval: 2000 })
-                          .run() // returns a promise
-                          .then(function (res) {
-                            return res;
-                          })
-                          .catch(function (err) {
-                            //
-                          })
-                          .progress(function (msg) {
-                            // 
-                          });
-        };
-    }]);
-```
-
-## Advanced
-
-Build named retry strategies for requests once and reuse across an application or multiple applications.
 
 ## API
 
-For Angular usage, simply replace the `` AjaxRetry().x `` with `` $httpRetry.x `` for each API example.
+**Please note** that if you are using Angular JS, replace `AjaxRetry` with `$httpRetry` in the examples below.
 
-### AjaxRetry().request(requestParams)
+The AJAX Retry library provides the following chainable methods:
+
+
+##### .request(requestParams)
  * **required**
  * Standard request parameters passed to [axios ajax helper library](https://github.com/mzabriskie/axios)
 
  Example: 
-  ```
-    AjaxRetry()
-        .request({
-            method: 'GET', 
-            url: 'api.com/endpoint/3' });
-  ```
 
-### AjaxRetry().group(groupName)
+```js
+AjaxRetry()
+    .request({
+      method: 'GET', 
+      url: 'api.com/endpoint/3' });
+```
+
+##### .group(groupName)
  * A group to which the current request belongs.
  * If a request fails and is being retried or re-attempted, all requests for that group will be blocked until the retry/re-attempt cycle is complete
  * Options:
    * **groupName** (string): name of the group to which this retry AJAX call belongs
 
  Example: 
- ```
-    AjaxRetry()
-        .request({ 
-            method: 'GET', 
-            url: '/users/3' })
-        .group('Users');
- ```
 
-### AjaxRetry().retry(retryParams)
+```js
+
+AjaxRetry()
+  .request({ 
+      method: 'GET', 
+      url: '/users/3' })
+  .group('Users');
+
+```
+
+##### .retry(retryParams)
 
  * Sets the retry parameters for current chained request
  * If not used or null parameters are provided, defaults are used
@@ -110,25 +159,27 @@ For Angular usage, simply replace the `` AjaxRetry().x `` with `` $httpRetry.x `
      * **interval** (int): the interval of time, in milliseconds, to wait between each retry
 
  Examples:
- ```
-     // Using default retry options
-     AjaxRetry()
-        .request({ 
-            method: 'GET', 
-            url: 'api.com/endpoint/3' })
-        .retry();
 
-    // Using custom retry options
-     AjaxRetry()
-        .request({ 
-            method: 'GET', 
-            url: 'api.com/endpoint/3' })
-        .retry({ 
-            max: 10, 
-            interval: 1000 });
- ```
+```js
 
-### AjaxRetry().reAttempt(reAttemptParams)
+// Using default retry options
+AjaxRetry()
+  .request({ 
+      method: 'GET', 
+      url: 'api.com/endpoint/3' })
+  .retry();
+
+// Using custom retry options
+ AjaxRetry()
+    .request({ 
+        method: 'GET', 
+        url: 'api.com/endpoint/3' })
+    .retry({ 
+        max: 10, 
+        interval: 1000 });
+```
+
+##### .reAttempt(reAttemptParams)
  * Sets the re-attempt parameters for current chained request
  * If not used, re-attempts will not occur
  * If null parameters are provided, defaults are used
@@ -138,70 +189,73 @@ For Angular usage, simply replace the `` AjaxRetry().x `` with `` $httpRetry.x `
    * **intervalMultiplicator** (int): Number to multiply the interval by upon each subsequent failure. Used for exponential or linear back-off strategies.
 
  Examples:
- ```
-     // Using default re-attempt options
-     AjaxRetry()
-        .request({ 
-            method: 'GET', 
-            url: 'api.com/endpoint/3' })
-        .retry()
-        .reAttempt();
 
-    // Using custom re-attempt options
-     AjaxRetry()
-        .request({ 
-            method: 'GET', 
-            url: 'api.com/endpoint/3' })
-        .retry()
-        .reAttempt({
-            max: 5,
-            interval: 3000 });
- ```
+```js
+ // Using default re-attempt options
+ AjaxRetry()
+  .request({ 
+      method: 'GET', 
+      url: 'api.com/endpoint/3' })
+  .retry()
+  .reAttempt();
 
-### AjaxRetry().run()
+// Using custom re-attempt options
+ AjaxRetry()
+  .request({ 
+      method: 'GET', 
+      url: 'api.com/endpoint/3' })
+  .retry()
+  .reAttempt({
+      max: 5,
+      interval: 3000 });
+```
+
+##### .run()
  * **Required**
  * Runs the currently configured request
  * Options: none
 
  Example
- ```
- 	AjaxRetry()
-        .request({ 
-            method: 'GET', 
-            url: 'api.com/endpoint/3' })
-        .retry()
-        .reAttempt()
-        .run();
- ```
+```js
+AjaxRetry()
+  .request({ 
+      method: 'GET', 
+      url: 'api.com/endpoint/3' })
+  .retry()
+  .reAttempt()
+  .run(); // executes the promise
+```
 
-### AjaxRetry().runStrategy(strategyName)
+##### .runStrategy(strategyName)
  * Run a pre-configured strategy
  * Strategies can be added with the `` addStrategy `` method
  Example
-  ```
- 	AjaxRetry()
-        .request({ 
-            method: 'GET', 
-            url: 'api.com/endpoint/3' })
-        .runStrategy('UserCalls');
- ```
 
-### AjaxRetry().addStrategy(strategyName, strategyOptions)
+```js
+AjaxRetry()
+  .request({ 
+      method: 'GET', 
+      url: 'api.com/endpoint/3' })
+  .runStrategy('UserCalls');
+```
+
+##### .addStrategy(strategyName, strategyOptions)
  * Adds strategy to the library for re-use later
  * You may add any combination of retry, reAttempt, group, and request parameters to a strategy
  * Required Options:
    * **strategyName**: (string) Name of the strategy
    * **strategyOptions** (Object):
-     ```
-     	{
-     		group: 'profile-api-calls',
-     		retry: {
-     			max: 10,
-     			interval: 3000,
-     		},
-     		reAttempt: {
-     			max: 10,
-     			interval: 5000,
-     		}
-     	}
-     ```
+
+```js
+{
+  group: 'profile-api-calls',
+  retry: {
+    max: 10,
+    interval: 3000,
+  },
+  reAttempt: {
+    max: 10,
+    interval: 5000,
+  }
+}
+```
