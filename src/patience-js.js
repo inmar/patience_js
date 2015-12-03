@@ -136,9 +136,9 @@ var messages = {
 };
 
 /**
- * AJAX Retry library initializing function
+ * Patience-JS initializing function
  */
-var AjaxRetry = function () {
+var Patience = function () {
 
   return {
     _options: {},
@@ -313,14 +313,14 @@ var AjaxRetry = function () {
 
   if (window.angular) {
 
-    angular.module('autoRetry', []);
+    angular.module('PatienceJS', []);
 
     angular
       .module('autoRetry')
       .service('$httpRetry', function () {
-        return AjaxRetry();
+        return Patience();
       });
   }
 
-}('AjaxRetry', AjaxRetry));
+}('Patience', Patience));
 

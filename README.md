@@ -1,12 +1,12 @@
 <br/>
-<h1 align="center">AJAX Retry</h1>
+<h1 align="center">Patience JS</h1>
 
 <h6 align="center">
   A promise-based AJAX library with retry strategies.
 </h6>
 
 <h5 align="center">
-  <a href="#">~Demo~</a> &nbsp;|&nbsp; 
+  <a href="#">~~Demo~~</a> &nbsp;|&nbsp; 
   <a href="#installation">Installation</a> &nbsp;|&nbsp; 
   <a href="#usage">Usage</a> &nbsp;|&nbsp;
   <a href="#api">API</a>  
@@ -17,27 +17,27 @@
 Download via [npm]() or [bower]().
 
 ```sh
-$ npm install auto-retry --save
+$ npm install patience-js --save
 ```
 
 Add retry library and dependencies to HTML.
 
 ```html
-<!-- AJAX Retry library-->
-<script src="node_modules/auto-retry/dist/auto-retry.min.js"></script>
+<!-- PatienceJS-->
+<script src="node_modules/auto-retry/dist/patience-js.min.js"></script>
 ```
 
 ## Usage
 
 For vanilla JS project:
 ```javascript
-var retryCall = AjaxRetry();
+var retryCall = Patience();
 ```
 
 For Angular.js library
 ```javascript
 // inject auto-retry module into your app
-angular.module('myApp', ['autoRetry']);
+angular.module('myApp', ['PatienceJS']);
 ```
 
 Basic usage of retry library in an angular service.
@@ -81,11 +81,12 @@ angular.module('myApp').service('API', ['$httpRetry', function () {
 
 ## API
 
-**Please note** that if you are using Angular JS, replace `AjaxRetry` with `$httpRetry` in the examples below.
+**Please note** that if you are using Angular JS, replace `Patience()` with `$httpRetry` in the examples below.
 
-The AJAX Retry library provides the following chainable methods:
+PatienceJS provides the following chainable methods:
 
 
+<br/>
 ##### .request(requestParams)
  * **required**
  * Standard request parameters passed to [axios ajax helper library](https://github.com/mzabriskie/axios)
@@ -93,23 +94,24 @@ The AJAX Retry library provides the following chainable methods:
  Example: 
 
 ```js
-AjaxRetry()
+Patience()
     .request({
       method: 'GET', 
       url: 'api.com/endpoint/3' });
 ```
 
+<br/>
 ##### .group(groupName)
  * A group to which the current request belongs.
  * If a request fails and is being retried or re-attempted, all requests for that group will be blocked until the retry/re-attempt cycle is complete
- * Options:
-   * **groupName** (string): name of the group to which this retry AJAX call belongs
+ * Parameters:
+    * **groupName** (string): name of the group to which this retry AJAX call belongs
 
  Example: 
 
 ```js
 
-AjaxRetry()
+Patience()
   .request({ 
       method: 'GET', 
       url: '/users/3' })
@@ -117,12 +119,13 @@ AjaxRetry()
 
 ```
 
+<br/>
 ##### .retry(retryParams)
 
  * Sets the retry parameters for current chained request
  * If not used or null parameters are provided, defaults are used
-   * Default options: `` { max: 2, interval: 100 } ``
-     * **max** (int): the maximum number of times to retry the AJAX request before failing
+   * Default parameters: `` { max: 2, interval: 100 } ``
+     * **max** (int): the maximum number of times to retry the request before failing
      * **interval** (int): the interval of time, in milliseconds, to wait between each retry
 
  Examples:
@@ -130,14 +133,14 @@ AjaxRetry()
 ```js
 
 // Using default retry options
-AjaxRetry()
+Patience()
   .request({ 
       method: 'GET', 
       url: 'api.com/endpoint/3' })
   .retry();
 
 // Using custom retry options
- AjaxRetry()
+ Patience()
     .request({ 
         method: 'GET', 
         url: 'api.com/endpoint/3' })
@@ -146,20 +149,21 @@ AjaxRetry()
         interval: 1000 });
 ```
 
+<br/>
 ##### .reAttempt(reAttemptParams)
  * Sets the re-attempt parameters for current chained request
  * If not used, re-attempts will not occur
  * If null parameters are provided, defaults are used
-   * Default options: `` { max: 3, interval: 1000, intervalMultiplicator: 1 } ``
-   * **max** (int): the maximum number of times to re-attempt the AJAX request before failing
-   * **interval** (int): the interval of time, in milliseconds, to wait between each re-attempt
-   * **intervalMultiplicator** (int): Number to multiply the interval by upon each subsequent failure. Used for exponential or linear back-off strategies.
+   * Default parameters: `` { max: 3, interval: 1000, intervalMultiplicator: 1 } ``
+     * **max** (int): the maximum number of times to re-attempt the request before failing
+     * **interval** (int): the interval of time, in milliseconds, to wait between each re-attempt
+     * **intervalMultiplicator** (int): Number to multiply the interval by upon each subsequent failure. Used for exponential or linear back-off strategies.
 
  Examples:
 
 ```js
  // Using default re-attempt options
- AjaxRetry()
+ Patience()
   .request({ 
       method: 'GET', 
       url: 'api.com/endpoint/3' })
@@ -167,7 +171,7 @@ AjaxRetry()
   .reAttempt();
 
 // Using custom re-attempt options
- AjaxRetry()
+ Patience()
   .request({ 
       method: 'GET', 
       url: 'api.com/endpoint/3' })
@@ -177,14 +181,15 @@ AjaxRetry()
       interval: 3000 });
 ```
 
+<br/>
 ##### .run()
- * **Required**
+ * **Required** in order to execute the request.
  * Runs the currently configured request
- * Options: none
+ * Parameters: None
 
  Example
 ```js
-AjaxRetry()
+Patience()
   .request({ 
       method: 'GET', 
       url: 'api.com/endpoint/3' })
@@ -193,25 +198,13 @@ AjaxRetry()
   .run(); // executes the promise
 ```
 
-##### .runStrategy(strategyName)
- * Run a pre-configured strategy
- * Strategies can be added with the `` addStrategy `` method
- Example
-
-```js
-AjaxRetry()
-  .request({ 
-      method: 'GET', 
-      url: 'api.com/endpoint/3' })
-  .runStrategy('UserCalls');
-```
-
+<br/>
 ##### .addStrategy(strategyName, strategyOptions)
  * Adds strategy to the library for re-use later
  * You may add any combination of retry, reAttempt, group, and request parameters to a strategy
- * Required Options:
-   * **strategyName**: (string) Name of the strategy
-   * **strategyOptions** (Object):
+ * Parameters:
+     * **strategyName** (string): Name of the strategy
+     * **strategyOptions** (Object):
 
 ```js
 {
@@ -226,3 +219,21 @@ AjaxRetry()
   }
 }
 ```
+
+<br/>
+##### .runStrategy(strategyName)
+ * Run a pre-configured strategy
+ * Strategies can be added with the `` addStrategy `` method
+ * Parameters:
+    * **strategyName** (string): Name of the strategy to run
+ 
+ Example
+
+```js
+Patience()
+  .request({ 
+      method: 'GET', 
+      url: 'api.com/endpoint/3' })
+  .runStrategy('User-API-Calls');
+```
+

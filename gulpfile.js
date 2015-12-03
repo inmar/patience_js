@@ -19,8 +19,8 @@ gulp.task('test', function () {
             'node_modules/q/q.js',
             'node_modules/qretry/build/qretry.min.js',
             'node_modules/jasmine-ajax/lib/mock-ajax.js',
-            'src/auto-retry.js',
-            'src/autoRetrySpec.js'])
+            'src/patience-js.js',
+            'src/patience-js.spec.js'])
     .pipe($.karma({
       configFile: 'karma.conf.js',
       action: 'run'
@@ -58,14 +58,14 @@ gulp.task('browserify', function() {
     debug: true
   });
   return b.bundle()
-    .pipe(source('auto-retry.js'))
+    .pipe(source('patience-js.js'))
     .pipe(gulp.dest('dist/'));
 });
 
 
 gulp.task('minify', function() {
   return gulp
-    .src(['dist/auto-retry.js'])
+    .src(['dist/patience-js.js'])
     .pipe(gulp.dest('dist/'))
     .pipe($.rename({
       suffix: '.min'
