@@ -3,10 +3,10 @@
 
 'use strict';
 
-var axios = require('axios');
+var axios  = require('axios');
 var Qretry = require('qretry');
 var PubSub = require('pubsub-js');
-var Q = require('q');
+var Q      = require('q');
 
 /**
  * Stores and manages singleton (static)

@@ -69,105 +69,83 @@ describe('--', function(){
 
     describe('Retry Functionality', function(){
 
-        var requestParams, customRetryParams, firstRetry;
+        var requestParams, customRetryParams;
 
         beforeEach(function(){
-            requestParams = {};
-            customRetryParams   = {
-                max: 15,
-                interval: 500,
-            };
 
-            spyOn(window, 'Qretry').and.callThrough();
+          requestParams = {
+            method: "GET",
+            url: "/fake/url"
+          };
 
-            // first call
-            ajaxRetry
-                .request(requestParams)
-                .retry()
-                .reAttempt()
-                .run();
-
-            // second call
-            firstRetry = ajaxRetry
-                .request(requestParams)
-                .retry(customRetryParams)
-                .reAttempt();
-
-            spyOn(firstRetry, '_doRequest').and.callFake(function () {
-            });
-
-            firstRetry.run();
+          customRetryParams   = {
+            max: 15,
+            interval: 500,
+          };
 
         });
 
-        it('should call Qretry to setup retry strategy', function(){
-            expect(window.Qretry.calls.any()).toEqual(true);
-        });
+        it('should set default retry parameters', function () {
 
-        it('should call Qretry with default retry params', function(){
-            var args = window.Qretry.calls.argsFor(0);
-            var defaults = {
-                max: 2,
-                interval: 100,
-                intervalMultiplicator: 1,
-                maxRetry: 2,
-            };
+          var defaultRetryCall = ajaxRetry
+                              .request(requestParams)
+                              .retry()
+                              .reAttempt();
 
-            expect(args[1]).toEqual(defaults);
+          var defaults = {
+            max: 2,
+            interval: 100,
+            intervalMultiplicator: 1,
+            maxRetry: 2,
+          };
+
+          expect(defaultRetryCall._options.retry).toEqual(defaults);
         });
 
         it('should override default retry params with custom call', function(){
+          var customRetryCall = ajaxRetry
+                                  .request(requestParams)
+                                  .retry(customRetryParams)
+                                  .reAttempt();
 
-            var args = window.Qretry.calls.argsFor(1);
-            var expectedArgs = {
-                max: customRetryParams.max,
-                interval: customRetryParams.interval,
-                intervalMultiplicator: 1,
-                maxRetry: customRetryParams.max
-            };
+          var expectedRetryOptions = customRetryParams;
+          expectedRetryOptions.intervalMultiplicator = 1;
+          expectedRetryOptions.maxRetry = 2;
 
-            expect(args[1]).toEqual(expectedArgs);
+          expect(customRetryCall._options.retry).toEqual(expectedRetryOptions);
+
         });
 
         it('should return object reference (this)', function(){
             var retryCallResult = ajaxRetry.request(requestParams).retry();
             expect(retryCallResult).toEqual(jasmine.any(Object));
+            expect(retryCallResult.reAttempt({})).toEqual(retryCallResult);
         });
     });
 
     describe('Re-attempt Functionality', function () {
 
-        var customRetryCall, reattemptParams;
-
-        beforeEach(function () {
-            spyOn(window, 'Qretry').and.callThrough();
-        });
-
-        it('should call Qretry with re-attempt default options', function () {
+        it('should set default re-attempt options', function () {
 
             var retryCall = ajaxRetry
                             .request()
                             .retry()
                             .reAttempt();
 
-            retryCall._doReAttempt();
-
-            var args = Qretry.calls.argsFor(0);
             var expected = {
                 max: 3,
                 interval: 1000,
                 intervalMultiplicator: 1,
-                maxRetry: 2,
             };
 
-            expect(args[1]).toEqual(expected);
+            expect(retryCall._options.reAttempt).toEqual(expected);
         });
 
         it('should override default options for re-attempt', function () {
 
             var reattemptParams = {
-                max: 100,
-                interval: 845348
+              max: 100,
+              interval: 845348
             };
 
             var customRetryCall = ajaxRetry
@@ -175,18 +153,13 @@ describe('--', function(){
                                 .retry()
                                 .reAttempt(reattemptParams);
 
-            customRetryCall._configure();
-            customRetryCall._doReAttempt({});
-
-            var args = Qretry.calls.argsFor(0);
             var expected = {
                 max: reattemptParams.max,
-                maxRetry: reattemptParams.max - 1,
                 intervalMultiplicator: 1,
                 interval: reattemptParams.interval
             };
 
-            expect(args[1]).toEqual(expected);
+            expect(customRetryCall._options.reAttempt).toEqual(expected);
         });
 
     });
