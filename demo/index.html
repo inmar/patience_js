@@ -13,15 +13,7 @@
       <!-- Angular -->
       <script src="bower_components/angular/angular.min.js"></script>
 
-      <!-- Retry module and dependencies -->
-      <!--
-      <script src="../node_modules/q/q.js"></script>
-      <script src="../node_modules/qretry/build/qretry.min.js"></script>
-      <script src="../node_modules/axios/dist/axios.min.js"></script>
-      <script src="../node_modules/pubsub-js/src/pubsub.js"></script>
-      -->
       <script src="../dist/auto-retry.js"></script>
-      <script src="../dist/auto-retry-angular.js"></script>
 
       <!-- Demo app -->
       <link href="bower_components/animate.css/animate.min.css" rel="stylesheet">
@@ -52,11 +44,15 @@
         <p>Make a request using retry library.</p>
         <p>Note: Re-attempts are not enabled unless explicitly called by your application.</p>
 
+        <br/>
         <button
           class="btn btn-sm btn-success"
           ng-click="ctrl.demoRequests.basic()">
           Make Request
         </button>
+        <small class="text-muted">Notification will appear after 3 failed AJAX requests.</small>
+        <br/>
+        <br/>
 <pre>
 <code class="language-javascript">
 // Default Retry Options:
@@ -75,11 +71,15 @@
       <div class="panel-body">
         <p>Make a request using retry library with custom options.</p>
 
+        <br/>
         <button
           class="btn btn-sm btn-success"
           ng-click="ctrl.demoRequests.customRetry()">
           Make Request
         </button>
+        <small class="text-muted">4 failing AJAX requests will be made with 1000ms delay betweeen each request.</small>
+        <br/>
+        <br/>
 
 <pre>
 <code class="language-javascript">
@@ -96,19 +96,23 @@
       <div class="panel-body">
         <p>
           A Re-attempt is a secondary abstraction available via the retry library.
-          It allows you to be notified when the retries fail (via the promise update/progress method)
+          It allows you to be notified when the retry strategy fails
           while the library starts to re-attempt the request at the provided re-attempt interval.
         </p>
         <p>
           A re-attempt also allows for an optional <code>intervalMultiplicator</code> option.
-          If provided,is an integer by which the <code>interval</code> will be increased after each re-attempt.
+          If provided, <code>intervalMultiplicator</code> is an integer by which the <code>interval</code> will be increased after each re-attempt.
         </p>
 
+        <br/>
         <button
           class="btn btn-sm btn-success"
           ng-click="ctrl.demoRequests.retryAndReAttempt()">
           Make Request
         </button>
+        <small class="text-muted">After the retry strategy fails, 3 additional AJAX requests will be attempted.</small>
+        <br/>
+        <br/>
 
 <pre>
 <code class="language-javascript">
@@ -129,9 +133,6 @@
         <p>
           This request will be made using custom retry and custom re-attempt options.
         </p>
-
-        <p>Custom Retry Options: <code></code></p>
-        <p>Custom Re-attempt Options: <code>{{ ctrl.reAttemptOptions.custom | json }}</code></p>
 
         <button
           class="btn btn-sm btn-success"

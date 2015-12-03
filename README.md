@@ -6,44 +6,11 @@
 </h6>
 
 <h5 align="center">
-  <a href="#overview">Overview</a> &nbsp;|&nbsp; 
+  <a href="#">Demo</a> &nbsp;|&nbsp; 
   <a href="#setup">Installation</a> &nbsp;|&nbsp; 
   <a href="#usage">Usage</a> &nbsp;|&nbsp;
   <a href="#setup">API</a>  
 </h5>
-
-## Overview 
-
-<h4> <u> Promise-based </u></h4>
-
-**AJAX Retry** uses the [**Qretry**](https://github.com/kriskowal/q) library to leverage the power of promises. 
-
-All **AJAX Retry** calls return [Q promises](https://github.com/kriskowal/q) for convenience.
-
-<h4> <u> Retry Strategies </u></h4>
-
-The main objective of this library is to provide highly customizable ways to retry failed AJAX calls (promises).
-
-If an AJAX call made via AJAX Retry fails, it will be autmatically retried upto two more times before the promise is rejected.
-
-<h4> <u> Complex Retry Strategies </u></h4>
-
-AJAX Retry allows you to get fancy with your retry strategies.
-
-The AJAX Retry library supports exponential backoffs, logical grouping, re-attempt cycles, and custom strategies. 
-
-<h4> <u> PubSub </u></h4>
-
-AJAX Retry uses the [PubSubJS](https://github.com/mroderick/PubSubJS) library to register events. 
-
-You can listen to these events in your app to show appropriate UI messaging or execute alternate routines.
-
-<h4> <u>AngularJS </u> </h4>
-
-AngularJS is supported by default. No need to install a separate library. 
-
-Simply inject the `autoRetry` module into your app and you will have access to the '$httpRetry' service. This service can be injected anywhere you would like to make use AJAX Retry.
-
 
 ## Installation
 
