@@ -6,7 +6,7 @@
 </h6>
 
 <h5 align="center">
-  <a href="#">~~Demo~~</a> &nbsp;|&nbsp; 
+  <!-- <a href="#">Demo</a> &nbsp;|&nbsp;  -->
   <a href="#installation">Installation</a> &nbsp;|&nbsp; 
   <a href="#usage">Usage</a> &nbsp;|&nbsp;
   <a href="#api">API</a>  
@@ -20,11 +20,11 @@ Download via [npm]() or [bower]().
 $ npm install patience-js --save
 ```
 
-Add retry library and dependencies to HTML.
+Add retry library to your project:
 
 ```html
 <!-- PatienceJS-->
-<script src="node_modules/auto-retry/dist/patience-js.min.js"></script>
+<script src="node_modules/patience-js/dist/patience-js.min.js"></script>
 ```
 
 ## Usage
@@ -36,14 +36,15 @@ var retryCall = Patience();
 
 For Angular.js library
 ```javascript
-// inject auto-retry module into your app
+
+// inject PatienceJS module into your app
 angular.module('myApp', ['PatienceJS']);
 ```
 
 Basic usage of retry library in an angular service.
 
 ```js
-// inject the $httpRetry service anywhere you would like to use auto-retry
+// inject the $httpRetry service anywhere you would like to use Patience-JS
 angular.module('myApp').service('API', ['$httpRetry', function () {
 
   this.getUser = function (userId) {
