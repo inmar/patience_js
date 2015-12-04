@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Demo App for Auto-retry library using AngularJS.
+ * Demo App for PatienceJS library using AngularJS.
  */
 
 (function () {
@@ -67,7 +67,7 @@
             // do something with the API response
           })
           .catch(function (err) {
-            // retry library provides { message: [String explaining error type], error: [AJAX Error Object] }
+            // PatienceJS provides { message: [String explaining error type], error: [AJAX Error Object] }
 
             // for demo purposes, we will show a UI message
             UIMessage.clearAllAndShow(err.message);
@@ -85,7 +85,7 @@
             // do something with the API response
           })
           .catch(function (err) {
-            // retry library provides { message: [String explaining error type], error: [AJAX Error Object] }
+            // PatienceJS provides { message: [String explaining error type], error: [AJAX Error Object] }
 
             // for demo purposes, we will show a UI message
             UIMessage.clearAllAndShow(err.message);
@@ -101,13 +101,13 @@
             // do something with the API response
           })
           .catch(function (err) {
-            // retry library provides { message: [String explaining error type], error: [AJAX Error Object] }
+            // PatienceJS provides { message: [String explaining error type], error: [AJAX Error Object] }
 
             // for demo purposes, we will show a UI message
             UIMessage.clearAllAndShow(err.message);
           })
           .progress(function (msg) {
-            // retry library provides { message: [ String explaining update], error: [AJAX Error Object] }
+            // PatienceJS provides { message: [ String explaining update], error: [AJAX Error Object] }
 
             // for demo purposes, we will show a UI message
             UIMessage.show(msg.message);
@@ -129,13 +129,13 @@
             // do something with the API response
           })
           .catch(function (err) {
-            // retry library provides { message: [String explaining error type], error: [AJAX Error Object] }
+            // PatienceJS provides { message: [String explaining error type], error: [AJAX Error Object] }
 
             // for demo purposes, we will show a UI message
             UIMessage.clearAllAndShow(err.message);
           })
           .progress(function (msg) {
-            // retry library provides { message: [ String explaining update], error: [AJAX Error Object] }
+            // PatienceJS provides { message: [ String explaining update], error: [AJAX Error Object] }
 
             // for demo purposes, we will show a UI message
             UIMessage.show(msg.message);
@@ -149,13 +149,13 @@
             // do something with the API response
           })
           .catch(function (err) {
-            // retry library provides { message: [String explaining error type], error: [AJAX Error Object] }
+            // PatienceJS provides { message: [String explaining error type], error: [AJAX Error Object] }
 
             // for demo purposes, we will show a UI message
             UIMessage.clearAllAndShow(err.message);
           })
           .progress(function (msg) {
-            // retry library provides { message: [ String explaining update], error: [AJAX Error Object] }
+            // PatienceJS provides { message: [ String explaining update], error: [AJAX Error Object] }
 
             // for demo purposes, we will show a UI message
             UIMessage.show(msg.message);
@@ -172,24 +172,24 @@
    * Angular App
    */
   angular.module('retryDemo', [
-    'autoRetry',
+    'PatienceJS',
     'cgNotify'
   ]);
 
   angular
+
     .module('retryDemo')
+
     .factory('UIMessage', ['notify', UIMessage])
+
     .controller('demoCtrl', demoCtrl)
+
     .filter('parseFunctionBody', function () {
       return function (value) {
           return (!value) ? '' : value.match(/function[^{]+\{([\s\S]*)\}$/)[1];
       };
     })
-    .filter('removeTabs', function () {
-      return function (value) {
-          return (!value) ? '' : value.replace(/        /g, '');
-      };
-    })
+
     .filter('removeTabs', function () {
       return function (value) {
           return (!value) ? '' : value.replace(/        /g, '');
