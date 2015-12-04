@@ -1934,7 +1934,7 @@ https://github.com/mroderick/PubSubJS
     var PubSub = {};
     root.PubSub = PubSub;
     factory(PubSub);
-    
+
 }(( typeof window === 'object' && window ) || this, function (PubSub){
 	'use strict';
 
@@ -2092,7 +2092,7 @@ https://github.com/mroderick/PubSubJS
 	/*Public: Clear subscriptions by the topic
 	*/
 	PubSub.clearSubscriptions = function clearSubscriptions(topic){
-		var m; 
+		var m;
 		for (m in messages){
 			if (messages.hasOwnProperty(m) && m.indexOf(topic) === 0){
 				delete messages[m];
@@ -6236,7 +6236,7 @@ return Q;
   // ---
   //
   // Returns a Promise resulting of a success action() or a maxRetry achieved (The rejected promise will contain the last action error).
-  // 
+  //
   // ---
   var Qretry = function (action, options) {
     if (typeof action !== "function") {

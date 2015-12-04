@@ -6,24 +6,24 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
       <link href="http://fonts.googleapis.com/css?family=Open+Sans:300,400,600" rel="stylesheet" type="text/css">
-      <title>Auto-retry</title>
+      <title>Patience JS</title>
 
       <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
 
       <!-- Angular -->
-      <script src="bower_components/angular/angular.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular.min.js"></script>
 
-      <script src="../dist/patience.js"></script>
+      <script src="dist/patience.js"></script>
 
       <!-- Demo app -->
-      <link href="bower_components/animate.css/animate.min.css" rel="stylesheet">
-      <link href="bower_components/angular-notify/dist/angular-notify.min.css" rel="stylesheet">
-      <link href="bower_components/prism/themes/prism-okaidia.css" rel="stylesheet">
-      <link href="styles.css" rel="stylesheet">
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.4.0/animate.min.css" rel="stylesheet">
+      <link href="http://cgross.github.io/angular-notify/dist/angular-notify.css" rel="stylesheet">
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/0.0.1/prism.min.css" rel="stylesheet">
+      <link href="demo/styles.css" rel="stylesheet">
 
-      <script src="bower_components/prism/prism.js"></script>
-      <script src="bower_components/angular-notify/dist/angular-notify.min.js"></script>
-      <script src="app.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/0.0.1/prism.min.js"></script>
+      <script src="http://cgross.github.io/angular-notify/dist/angular-notify.js"></script>
+      <script src="demo/app.js"></script>
     </head>
 
   <body ng-controller="demoCtrl as ctrl" class="container">
@@ -36,12 +36,12 @@
       Clear Console
     </button>
 
-    <h1 class="page-header text-center">Auto Retry</h1>
+    <h1 class="page-header text-center">Patience JS</h1>
 
     <div class="panel panel-default">
       <div class="panel-heading lead">Basic Usage</div>
       <div class="panel-body">
-        <p>Make a request using retry library.</p>
+        <p>Make a request using PatienceJS library.</p>
         <p>Note: Re-attempts are not enabled unless explicitly called by your application.</p>
 
         <br/>
