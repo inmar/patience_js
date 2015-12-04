@@ -93,10 +93,10 @@ PatienceJS provides the following chainable methods:
 |---|---|
 |[.request()](#requestrequestparams) | Standard request parameters for AJAX request |
 |[.group()](#groupgroupname) | Assign a group to which the current request belongs |
-|[.retry()](#retryreteryParams) | Overrides the default retry configuration |
+|[.retry()](#retryretryparams) | Overrides the default retry configuration |
 |[.reAttempt()](#reattemptreattemptparams) | Enables and configures re-attempts |
 |[.run()](#run) | Runs the currently chained Patience request |
-|[.addStrategy()](#addstrategystrategyname) | Configures a "strategy" which can be re-used between requests |
+|[.addStrategy()](#addstrategystrategyname-strategyoptions) | Configures a "strategy" which can be re-used between requests |
 |[.runStrategy()](#runstrategystrategyname) | Run a pre-configured strategy |
 
 <br/>
