@@ -1,6 +1,6 @@
 {
   "name": "patience-js",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A promise-based AJAX helper library which allows retry configuration and strategy-based request building. AngularJS supported.",
   "main": "./index.js",
   "scripts": {

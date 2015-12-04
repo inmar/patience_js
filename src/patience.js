@@ -316,7 +316,7 @@ var Patience = function () {
     angular.module('PatienceJS', []);
 
     angular
-      .module('autoRetry')
+      .module('PatienceJS')
       .service('$httpRetry', function () {
         return Patience();
       });
