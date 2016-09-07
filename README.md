@@ -1,5 +1,7 @@
-<br/>
-<h1 align="center">Patience JS</h1>
+<h1 align="center">
+  <img align="center" width="200" src="./inmar-logo-transparent.png" alt="Inmar Inc. Logo"><br/><br/>
+  Patience JS
+</h1>
 
 <h6 align="center">
   A promise-based request library with retry strategies.
