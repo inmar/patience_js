@@ -35,7 +35,7 @@
     "karma": "^0.13.9",
     "karma-browserify": "^4.4.1",
     "karma-chrome-launcher": "^0.2.0",
-    "karma-coverage": "^0.4.2",
+    "karma-coverage": "^2.0.2",
     "karma-jasmine": "^0.3.6",
     "karma-junit-reporter": "^0.3.2",
     "run-sequence": "^1.1.4",
