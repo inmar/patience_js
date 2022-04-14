@@ -13,7 +13,7 @@
   "author": "afaq.tariq@inmar.com",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.5.4",
+    "axios": "^0.18.1",
     "pubsub-js": "^1.5.2",
     "q": "^1.4.1",
     "qretry": "^0.3.0"
